@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="jp">
+    <html lang="ja">
       <body
         className={notoSansJP.className + " bg-background text-foreground"}
       >
