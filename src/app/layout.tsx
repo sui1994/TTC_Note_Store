@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_JP} from "next/font/google";
 import "./globals.css";
 
-const  notoSansJP= Noto_Sans_JP({ subsets: ["latin"],
-});
+const notoSansJP = Noto_Sans_JP({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Book commerce app",
