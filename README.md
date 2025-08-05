@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next.js Book Commerce App
 
-## Getting Started
+## 概要
 
-First, run the development server:
+Udemy コース「しんコードキャンプ」で学習する Next.js を使用した書籍 EC サイトです。
+
+## 技術スタック
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- Prisma (データベース)
+
+## 機能
+
+- 書籍一覧表示
+- 書籍詳細表示
+- ショッピングカート
+- ユーザー認証
+- 決済機能
+
+## セットアップ
+
+### 前提条件
+
+- Node.js 18.0 以上
+- npm または yarn
+
+### インストール
 
 ```bash
-npm run dev →　こちらで実行
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+# または
+yarn install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 開発サーバーの起動
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run dev
+# または
+yarn dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+ブラウザで [http://localhost:3000](http://localhost:3000) を開いて確認してください。
 
-## Learn More
+## プロジェクト構成
 
-To learn more about Next.js, take a look at the following resources:
+```
+next-udemy-book-commerce-app-with-shincodecamp/
+├── components/          # Reactコンポーネント
+├── pages/              # Next.jsページ
+├── public/             # 静的ファイル
+├── styles/             # スタイルファイル
+├── IMG/                # 画像アセット
+└── README.md           # このファイル
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 学習内容
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Next.js の基本概念
+- React コンポーネントの作成
+- TypeScript の使用
+- データベース連携
+- 認証システムの実装
 
-## Deploy on Vercel
+## ブランチ情報
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `feature/add-header-component-and-integrate-into-layout`: ヘッダーコンポーネント追加
