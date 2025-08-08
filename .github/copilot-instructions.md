@@ -23,7 +23,7 @@ const fetchBooks = async () => {
   return response.json();
 };
 
-// 悪い例：英語コメント
+// 非推奨例：英語コメント
 const fetchBooks = async () => {
   // Fetch book data
   const response = await fetch("/api/books");
