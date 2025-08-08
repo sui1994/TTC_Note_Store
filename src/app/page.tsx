@@ -15,8 +15,8 @@ const books = [
       profile_icon: "https://source.unsplash.com/random/2",
     },
     content: "Content 1",
-    created_at: new Date().toString(),
-    updated_at: new Date().toString(),
+    created_at: "2024-01-01T00:00:00.000Z",
+    updated_at: "2024-01-01T00:00:00.000Z",
   },
   {
     id: 2,
@@ -30,8 +30,8 @@ const books = [
       profile_icon: "https://source.unsplash.com/random/3",
     },
     content: "Content 2",
-    created_at: new Date().toString(),
-    updated_at: new Date().toString(),
+    created_at: "2024-01-02T00:00:00.000Z",
+    updated_at: "2024-01-02T00:00:00.000Z",
   },
   {
     id: 3,
@@ -45,8 +45,8 @@ const books = [
       profile_icon: "https://source.unsplash.com/random/4",
     },
     content: "Content 3",
-    created_at: new Date().toString(),
-    updated_at: new Date().toString(),
+    created_at: "2024-01-03T00:00:00.000Z",
+    updated_at: "2024-01-03T00:00:00.000Z",
   },
 ];
 
