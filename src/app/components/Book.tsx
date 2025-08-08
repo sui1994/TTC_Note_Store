@@ -2,12 +2,23 @@
 
 import Image from "next/image";
 
+// 文字列を指定した長さで切り詰める関数
+const truncate = (text: string, maxLength: number): string => {
+  if (!text || text.length <= maxLength) return text || "";
+  return text.substring(0, maxLength) + "...";
+};
+
 interface BookType {
-  id: string;
+  id: number;
   title: string;
   thumbnail: string;
   price: number;
-  author: string;
+  author: {
+    id: number;
+    name: string;
+    description: string;
+    profile_icon: string;
+  };
   content: string;
   created_at: string;
   updated_at: string;
