@@ -2,7 +2,22 @@
 
 import Image from "next/image";
 
-const Book = ({ book }: any) => {
+interface BookType {
+  id: string;
+  title: string;
+  thumbnail: string;
+  price: number;
+  author: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface BookProps {
+  book: BookType;
+}
+
+const Book = ({ book }: BookProps) => {
   return (
     <>
       {/*　アニメーション　*/}
