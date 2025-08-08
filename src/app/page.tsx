@@ -10,7 +10,7 @@ const books = [
     price: 2980,
     author: {
       id: 1,
-      name: "Author Name",
+      name: "Alice Smith",
       description: "Author 1 description",
       profile_icon: "https://source.unsplash.com/random/2",
     },
