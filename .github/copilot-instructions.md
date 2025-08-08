@@ -55,7 +55,11 @@ chore: その他の変更
 src/
   app/
     components/     # 再利用可能なコンポーネント
-    (pages)/       # ページコンポーネント
+    dashboard/      # ダッシュボードページ
+      page.tsx      # /dashboard ルート
+    profile/        # プロフィールページ
+      page.tsx      # /profile ルート
+    api/           # API Routes
   lib/             # ユーティリティ関数
   types/           # TypeScript型定義
 ```
