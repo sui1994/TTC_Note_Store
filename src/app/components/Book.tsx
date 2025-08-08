@@ -41,7 +41,7 @@ const Book = ({ book }: BookProps) => {
           <Image priority src={book.thumbnail} alt={book.title} width={450} height={350} className="rounded-t-md"></Image>
           <div className="px-4 py-4 bg-slate-100 rounded-b-md">
             <h2 className="text-lg font-semibold">{book.title}</h2>
-            <p className="mt-2 text-lg text-slate-600">この本は○○...</p>
+            <p className="mt-2 text-lg text-slate-600">{truncate(book.content || "説明がありません", 100)}</p>
             <p className="mt-2 text-lg text-slate-700">値段:{book.price}円</p>
           </div>
         </a>
