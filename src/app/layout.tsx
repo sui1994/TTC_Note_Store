@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import Header from "./components/Header";
-import { Providers } from "./providers";
+import { NextAuthProvider } from "@/lib/next-auth/provider";
 
 const notoSansJP = Noto_Sans_JP({ subsets: ["latin"] });
 
@@ -19,10 +19,10 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className={notoSansJP.className + " bg-background text-foreground"}>
-        <Providers>
+        <NextAuthProvider>
           <Header />
           {children}
-        </Providers>
+        </NextAuthProvider>
       </body>
     </html>
   );
