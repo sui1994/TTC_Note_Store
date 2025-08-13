@@ -99,7 +99,7 @@ const Book = memo(({ book, user, isPurchased }: BookProps) => {
         >
           <Image
             priority
-            src={book.thumbnail || "/default_icon.png"} // サムネイルが無い場合はデフォルト画像を表示
+            src={book.thumbnail.url || "/default_icon.png"} // サムネイルが無い場合はデフォルト画像を表示
             alt={book.title}
             width={450}
             height={350}
