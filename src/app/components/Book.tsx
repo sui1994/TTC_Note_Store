@@ -16,6 +16,7 @@ const Book = memo(({ book, user, isPurchased }: BookProps) => {
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
 
+
   //stripe checkout
   const startCheckout = async (bookId: number) => {
     try {

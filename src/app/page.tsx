@@ -1,5 +1,6 @@
 import Book from "./components/Book";
 import { getAllBooks } from "@/lib/microcms/client";
+import { BookType } from "./components/types/types";
 
 
 
@@ -47,7 +48,6 @@ import { getAllBooks } from "@/lib/microcms/client";
 
 export default async function Home() {
   const {contents } = await getAllBooks();
-  console.log(contents);
 
 
   return  (
@@ -58,7 +58,7 @@ export default async function Home() {
       </div>
 
       <div className="flex flex-wrap justify-center">
-        {contents.map((book) => (
+        {contents.map((book: BookType) => (
           <Book key={book.id} book={book} />
         ))}
       </div>
