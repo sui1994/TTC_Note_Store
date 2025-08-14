@@ -5,11 +5,6 @@ import { prisma } from "@/lib/prisma";
 
 export const nextAuthOptions: NextAuthOptions = {
   debug: false,
-  logger: {
-    error: () => {}, // エラーログを無視
-    warn: () => {}, // 警告ログを無視
-    debug: () => {}, // デバッグログを無視
-  },
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_ID!,
@@ -17,12 +12,23 @@ export const nextAuthOptions: NextAuthOptions = {
     }),
   ],
   adapter: PrismaAdapter(prisma),
+  session: {
+    strategy: "database",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
+  },
   callbacks: {
     session: ({ session, user }) => {
       return {
         ...session,
         user: { ...session.user, id: user.id },
       };
+    },
+  },
+  events: {
+    async signOut({ session, token }) {
+      // セッション削除時のエラーハンドリング
+      console.log("User signed out:", session?.user?.email || "Unknown user");
     },
   },
 };
