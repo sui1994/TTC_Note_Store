@@ -5,6 +5,11 @@ import { prisma } from "@/lib/prisma";
 
 export const nextAuthOptions: NextAuthOptions = {
   debug: false,
+  logger: {
+    error: () => {}, // エラーログを無視
+    warn: () => {}, // 警告ログを無視
+    debug: () => {}, // デバッグログを無視
+  },
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_ID!,
