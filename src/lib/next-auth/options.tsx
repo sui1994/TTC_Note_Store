@@ -4,7 +4,7 @@ import GithubProvider from "next-auth/providers/github";
 import { prisma } from "@/lib/prisma";
 
 export const nextAuthOptions: NextAuthOptions = {
-  debug: false,
+  debug: process.env.NODE_ENV === "development",
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_ID!,
@@ -24,11 +24,31 @@ export const nextAuthOptions: NextAuthOptions = {
         user: { ...session.user, id: user.id },
       };
     },
+    async redirect({ url, baseUrl }) {
+      // 認証後は常にホームページにリダイレクト
+      if (url.startsWith("/login")) {
+        return baseUrl;
+      }
+      // 相対URLの場合はbaseUrlと結合
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+      // 同じオリジンの場合はそのまま
+      if (new URL(url).origin === baseUrl) {
+        return url;
+      }
+      // それ以外はホームページ
+      return baseUrl;
+    },
   },
   events: {
-    async signOut({ session, token }) {
+    async signOut() {
       // セッション削除時のエラーハンドリング
-      // console.log("User signed out:", session?.user?.email || "Unknown user");
+      try {
+        await prisma.$disconnect();
+      } catch (error) {
+        console.error("Error disconnecting Prisma:", error);
+      }
     },
   },
 };
