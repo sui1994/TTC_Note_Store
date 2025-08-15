@@ -50,7 +50,7 @@ const PurchaseSuccess = () => {
           } else {
             // console.log("No bookId in response:", data);
             // console.log("Response keys:", Object.keys(data));
-            setError(`購入情報の取得に失敗しました。レスポンス: ${JSON.stringify(data)}`);
+            setError("購入情報の取得に失敗しました");
           }
         } catch (err) {
           console.error("Error fetching data:", err);
