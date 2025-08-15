@@ -10,7 +10,7 @@ export async function POST(request: Request, response: Response) {
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    const existingPurchases = prisma.purchase.findFirst({
+    const existingPurchases = await prisma.purchase.findFirst({
       where: {
         userId: session.client_reference_id!,
         bookId: session.metadata?.bookId!,
