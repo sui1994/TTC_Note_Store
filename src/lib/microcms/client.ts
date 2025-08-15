@@ -55,7 +55,6 @@ export const getAllBooks = async () => {
 
     return allBooks;
   } catch (error) {
-    console.error("Error fetching all books from microCMS:", error);
     throw error;
   }
 };
