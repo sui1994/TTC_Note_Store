@@ -2,7 +2,8 @@
 import { getServerSession } from "next-auth";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { Purchase, BookType } from "../components/types/types";
+import { BookType } from "../components/types/types";
+import { Purchase } from "@prisma/client";
 import { getBook } from "@/lib/microcms/client";
 import PurchaseDetailBook from "../components/PurcehaseDetailBook";
 import { prisma } from "@/lib/prisma";
