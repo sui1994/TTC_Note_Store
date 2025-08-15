@@ -9,6 +9,10 @@ export async function POST(request: Request) {
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
+      metadata: {
+        bookId: bookId,
+      },
+      client_reference_id: userId,
       line_items: [
         {
           price_data: {

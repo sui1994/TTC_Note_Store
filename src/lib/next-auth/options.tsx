@@ -28,7 +28,7 @@ export const nextAuthOptions: NextAuthOptions = {
   events: {
     async signOut({ session, token }) {
       // セッション削除時のエラーハンドリング
-      console.log("User signed out:", session?.user?.email || "Unknown user");
+      // console.log("User signed out:", session?.user?.email || "Unknown user");
     },
   },
 };
