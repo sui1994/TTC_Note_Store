@@ -18,7 +18,9 @@ export const testConnection = async () => {
       queries: { limit: 1 },
     });
 
-    console.log("Connection test successful:", response);
+    if (process.env.NODE_ENV === "development") {
+      console.log("Connection test successful:", response);
+    }
     return true;
   } catch (error) {
     console.error("Connection test failed:", error);
