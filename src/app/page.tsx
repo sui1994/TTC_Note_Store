@@ -72,7 +72,6 @@ export default async function Home() {
         const purchasesData = await response.json();
         purchasedIds = purchasesData.map((purchase: Purchase) => purchase.bookId);
       const purchasesData = await getPurchasesByUserId(user.id);
-      purchasedIds = purchasesData.map((purchase: Purchase) => purchase.bookId);
     } catch (error) {
       console.error("Error fetching purchases:", error);
     }
