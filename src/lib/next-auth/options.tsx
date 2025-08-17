@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export const nextAuthOptions = {
   debug: process.env.NODE_ENV === "development",
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_ID!,
