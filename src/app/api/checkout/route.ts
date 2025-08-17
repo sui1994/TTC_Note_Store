@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
 // Stripeクライアントを遅延初期化する関数
@@ -14,12 +14,6 @@ function getStripeClient() {
 }
 
 export async function POST(request: Request) {
-  console.log("Stripe checkout request received");
-  console.log("Environment variables check:", {
-    STRIPE_SECRET_KEY_EXISTS: !!process.env.STRIPE_SECRET_KEY,
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-  });
-
   // 環境変数の確認とStripeクライアントの初期化
   let stripe: Stripe;
   try {
