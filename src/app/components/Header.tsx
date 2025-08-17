@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 const Header = () => {
   const { data: session, status } = useSession();

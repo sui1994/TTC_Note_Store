@@ -8,7 +8,6 @@ import { useSession } from "next-auth/react";
 
 type BookProps = {
   book: BookType;
-  user?: any; // オプショナルに変更
   isPurchased: boolean;
 };
 
@@ -19,10 +18,10 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
   const { data: session } = useSession();
 
   // セッションからユーザー情報を取得
-  const user = session?.user;
+  const user = session?.user as { id: string; name?: string | null; email?: string | null; image?: string | null } | undefined;
 
   //stripe checkout
-  const startCheckout = async (bookId: string) => {
+  const startCheckout = async () => {
     // console.log("Starting checkout for book:", bookId);
     // console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
 
@@ -92,7 +91,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
     } else {
       // console.log("User exists, starting checkout");
       //Stripe購入画面へ。購入済みならそのまま本ページへ。
-      startCheckout(book.id);
+      startCheckout();
     }
   };
 

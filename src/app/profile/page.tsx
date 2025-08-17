@@ -1,5 +1,5 @@
-import { nextAuthOptions } from "@/lib/next-auth/options";
-import { getServerSession } from "next-auth";
+﻿import { nextAuthOptions } from "@/lib/next-auth/options";
+import { getServerSession } from "next-auth/next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { BookType } from "../components/types/types";
@@ -56,11 +56,11 @@ export default async function ProfilePage() {
   try {
     const session = await getServerSession(nextAuthOptions);
 
-    if (!session?.user) {
+    if (!(session as { user?: { id: string; name?: string | null; email?: string | null; image?: string | null } })?.user) {
       redirect("/login");
     }
 
-    const user = session.user;
+    const user = (session as { user: { id: string; name?: string | null; email?: string | null; image?: string | null } }).user;
     console.log("User ID:", user.id);
 
     // ユーザーIDが存在する場合のみ購入履歴を取得
