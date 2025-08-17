@@ -8,6 +8,9 @@ import { getBook } from "@/lib/microcms/client";
 import PurchaseDetailBook from "../components/PurchaseDetailBook";
 import { prisma } from "@/lib/prisma";
 
+// Force dynamic rendering since this page uses session/headers
+export const dynamic = "force-dynamic";
+
 async function getPurchasedBooks(userId: string): Promise<BookType[]> {
   try {
     console.log("Fetching purchases for user:", userId);

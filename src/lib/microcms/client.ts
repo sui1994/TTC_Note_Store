@@ -1,14 +1,34 @@
 import { BookType } from "@/app/components/types/types";
 import { createClient } from "microcms-js-sdk";
 
-export const client = createClient({
-  serviceDomain: process.env.NEXT_PUBLIC_SERVICE_DOMAIN!,
-  apiKey: process.env.NEXT_PUBLIC_API_KEY!,
-});
+// Check if environment variables are available
+const serviceDomain = process.env.NEXT_PUBLIC_SERVICE_DOMAIN;
+const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+
+// Create client only if both environment variables are available
+let client: ReturnType<typeof createClient> | null = null;
+
+if (serviceDomain && apiKey) {
+  client = createClient({
+    serviceDomain,
+    apiKey,
+  });
+} else {
+  console.error("MicroCMS configuration missing:", {
+    serviceDomain: !!serviceDomain,
+    apiKey: !!apiKey,
+  });
+}
+
+export { client };
 
 // microCMS接続テスト関数
 export const testConnection = async () => {
   try {
+    if (!client) {
+      throw new Error("MicroCMS client is not initialized. Please check your environment variables.");
+    }
+
     // console.log("Testing microCMS connection...");
     // console.log("Service Domain:", process.env.NEXT_PUBLIC_SERVICE_DOMAIN);
     // console.log("API Key (first 10 chars):", process.env.NEXT_PUBLIC_API_KEY?.substring(0, 10) + "...");
@@ -28,6 +48,10 @@ export const testConnection = async () => {
 
 export const getAllBooks = async () => {
   try {
+    if (!client) {
+      throw new Error("MicroCMS client is not initialized. Please check your environment variables (NEXT_PUBLIC_SERVICE_DOMAIN and NEXT_PUBLIC_API_KEY).");
+    }
+
     // console.log("Fetching all books from microCMS...");
     // console.log("Service Domain:", process.env.NEXT_PUBLIC_SERVICE_DOMAIN);
     // console.log("API Key exists:", !!process.env.NEXT_PUBLIC_API_KEY);
@@ -62,6 +86,10 @@ export const getAllBooks = async () => {
 
 export const getBook = async (contentId: string) => {
   try {
+    if (!client) {
+      throw new Error("MicroCMS client is not initialized. Please check your environment variables (NEXT_PUBLIC_SERVICE_DOMAIN and NEXT_PUBLIC_API_KEY).");
+    }
+
     // console.log("Fetching book with ID:", contentId);
 
     if (!contentId || contentId === "null" || contentId === "undefined") {
@@ -76,9 +104,12 @@ export const getBook = async (contentId: string) => {
     console.log("getBook response:", detailBook);
     return detailBook;
   } catch (error) {
-    // console.error("Error fetching book from MicroCMS:", error);
-    // console.error("Content ID:", contentId);
-    // console.error("Error details:", error);
+    console.error("Error fetching book from MicroCMS:", error);
+    console.error("Content ID:", contentId);
+    console.error("Configuration check:", {
+      serviceDomain: !!serviceDomain,
+      apiKey: !!apiKey,
+    });
     throw error;
   }
 };
