@@ -21,6 +21,10 @@ const PurchaseSuccess = () => {
           const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/checkout/success`;
           // console.log("Full API URL:", apiUrl);
 
+          console.log("Making request to:", apiUrl);
+          console.log("Request method: POST");
+          console.log("Request body:", JSON.stringify({ sessionId }));
+
           const res = await fetch(apiUrl, {
             method: "POST",
             headers: {
@@ -29,8 +33,9 @@ const PurchaseSuccess = () => {
             body: JSON.stringify({ sessionId }),
           });
 
-          // console.log("Response status:", res.status);
-          // console.log("Response ok:", res.ok);
+          console.log("Response status:", res.status);
+          console.log("Response ok:", res.ok);
+          console.log("Response headers:", Object.fromEntries(res.headers.entries()));
 
           if (!res.ok) {
             const errorText = await res.text();

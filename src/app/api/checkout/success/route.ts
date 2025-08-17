@@ -15,6 +15,8 @@ function getStripeClient() {
 }
 
 export async function POST(request: Request) {
+  console.log("POST request received at /api/checkout/success");
+
   // 環境変数の確認とStripeクライアントの初期化
   let stripe: Stripe;
   try {
@@ -23,7 +25,9 @@ export async function POST(request: Request) {
     console.error("Stripe initialization error:", error);
     return NextResponse.json({ error: "Server configuration error: Missing Stripe API key" }, { status: 500 });
   }
+
   const { sessionId } = await request.json();
+  console.log("Received sessionId:", sessionId);
 
   try {
     // console.log("Retrieving Stripe session:", sessionId);
@@ -92,4 +96,17 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+// 他のHTTPメソッドに対するハンドラーを追加
+export async function GET() {
+  return NextResponse.json({ error: "Method not allowed. Use POST instead." }, { status: 405 });
+}
+
+export async function PUT() {
+  return NextResponse.json({ error: "Method not allowed. Use POST instead." }, { status: 405 });
+}
+
+export async function DELETE() {
+  return NextResponse.json({ error: "Method not allowed. Use POST instead." }, { status: 405 });
 }
