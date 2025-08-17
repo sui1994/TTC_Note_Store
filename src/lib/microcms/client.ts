@@ -1,5 +1,5 @@
 import { BookType } from "@/app/components/types/types";
-import { MicroCMSQueries,createClient } from "microcms-js-sdk";
+import { createClient } from "microcms-js-sdk";
 
 export const client = createClient({
   serviceDomain: process.env.NEXT_PUBLIC_SERVICE_DOMAIN!,
@@ -7,23 +7,23 @@ export const client = createClient({
 });
 
 export const getAllBooks = async () => {
-    const allBooks = await client.getList<BookType>({
-      endpoint: "bookcommerce",
-      customRequestInit: {
-        cache: "no-store",
-      },
-    });
+  const allBooks = await client.getList<BookType>({
+    endpoint: "bookcommerce",
+    customRequestInit: {
+      cache: "no-store",
+    },
+  });
 
-    return allBooks;
+  return allBooks;
 };
 
 export const getBook = async (contentId: string) => {
-
-    const detailBook = await client.get<BookType>({
-      endpoint: "bookcommerce",
-      customRequestInit: {
-        cache: "no-store",
-      },
-    });
-    return detailBook;
+  const detailBook = await client.get<BookType>({
+    endpoint: "bookcommerce",
+    contentId: contentId,
+    customRequestInit: {
+      cache: "no-store",
+    },
+  });
+  return detailBook;
 };
