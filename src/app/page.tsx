@@ -124,14 +124,39 @@ export default async function Home() {
     );
   } catch (error) {
     console.error("Error in Home page:", error);
+
+    // 環境変数のチェック
+    const missingEnvVars = [];
+    if (!process.env.NEXTAUTH_SECRET) missingEnvVars.push("NEXTAUTH_SECRET");
+    if (!process.env.GITHUB_ID) missingEnvVars.push("GITHUB_ID");
+    if (!process.env.GITHUB_SECRET) missingEnvVars.push("GITHUB_SECRET");
+    if (!process.env.NEXT_PUBLIC_SERVICE_DOMAIN) missingEnvVars.push("NEXT_PUBLIC_SERVICE_DOMAIN");
+    if (!process.env.NEXT_PUBLIC_API_KEY) missingEnvVars.push("NEXT_PUBLIC_API_KEY");
+    if (!process.env.DATABASE_URL) missingEnvVars.push("DATABASE_URL");
+
     return (
       <>
         <main className="flex flex-wrap justify-center items-center md:mt-20 mt-20">
           <h2 className="text-center w-full font-bold text-3xl mb-2">Book Commerce</h2>
           <div className="text-center w-full py-8">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md mx-auto">
-              <h3 className="text-lg font-bold text-red-800 mb-2">エラーが発生しました</h3>
-              <p className="text-red-600">アプリケーションの設定に問題があります。管理者にお問い合わせください。</p>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-lg mx-auto">
+              <h3 className="text-lg font-bold text-red-800 mb-2">設定エラー</h3>
+              <p className="text-red-600 mb-4">アプリケーションの設定に問題があります。</p>
+
+              {missingEnvVars.length > 0 && (
+                <div className="text-left">
+                  <p className="text-sm text-red-700 mb-2">不足している環境変数:</p>
+                  <ul className="text-xs text-red-600 list-disc list-inside space-y-1">
+                    {missingEnvVars.map((envVar) => (
+                      <li key={envVar}>{envVar}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="mt-4 text-xs text-gray-600">
+                <p>Error ID: {error instanceof Error ? error.message : "Unknown error"}</p>
+              </div>
             </div>
           </div>
         </main>
