@@ -10,6 +10,7 @@ export async function GET() {
       GITHUB_SECRET: !!process.env.GITHUB_SECRET,
       NEXT_PUBLIC_SERVICE_DOMAIN: !!process.env.NEXT_PUBLIC_SERVICE_DOMAIN,
       NEXT_PUBLIC_API_KEY: !!process.env.NEXT_PUBLIC_API_KEY,
+      NEXT_PUBLIC_API_URL: !!process.env.NEXT_PUBLIC_API_URL,
       DATABASE_URL: !!process.env.DATABASE_URL,
       POSTGRES_PRISMA_URL: !!process.env.POSTGRES_PRISMA_URL,
       STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,

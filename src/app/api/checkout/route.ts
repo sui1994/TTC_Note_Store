@@ -14,6 +14,12 @@ function getStripeClient() {
 }
 
 export async function POST(request: Request) {
+  console.log("Stripe checkout request received");
+  console.log("Environment variables check:", {
+    STRIPE_SECRET_KEY_EXISTS: !!process.env.STRIPE_SECRET_KEY,
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+  });
+
   // 環境変数の確認とStripeクライアントの初期化
   let stripe: Stripe;
   try {
@@ -45,8 +51,8 @@ export async function POST(request: Request) {
         },
       ],
       mode: "payment",
-      success_url: "http://localhost:3000/book/checkout-success?session_id={CHECKOUT_SESSION_ID}",
-      cancel_url: "http://localhost:3000",
+      success_url: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/book/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}`,
     });
     return NextResponse.json({
       checkout_url: session.url,
