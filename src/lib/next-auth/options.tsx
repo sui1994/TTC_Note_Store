@@ -2,9 +2,18 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import GithubProvider from "next-auth/providers/github";
 import { prisma } from "@/lib/prisma";
 
+// 環境変数のデバッグログ
+console.log("NextAuth Environment Check:", {
+  NODE_ENV: process.env.NODE_ENV,
+  NEXTAUTH_SECRET_EXISTS: !!process.env.NEXTAUTH_SECRET,
+  NEXTAUTH_URL_EXISTS: !!process.env.NEXTAUTH_URL,
+  GITHUB_ID_EXISTS: !!process.env.GITHUB_ID,
+  GITHUB_SECRET_EXISTS: !!process.env.GITHUB_SECRET,
+});
+
 export const nextAuthOptions = {
   debug: process.env.NODE_ENV === "development",
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_ID!,
