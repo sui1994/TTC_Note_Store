@@ -87,7 +87,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
 
     if (!user) {
       // console.log("No user, redirecting to login");
-      router.push("/login");
+      router.push("/api/auth/signin");
     } else {
       // console.log("User exists, starting checkout");
       //Stripe購入画面へ。購入済みならそのまま本ページへ。
