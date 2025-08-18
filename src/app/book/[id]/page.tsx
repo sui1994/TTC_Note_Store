@@ -36,7 +36,6 @@ const DetailBook = async ({ params }: { params: Promise<{ id: string }> }) => {
       </div>
     );
   } catch (error) {
-    console.error("Error loading book:", error);
     return (
       <div className="container mx-auto p-4">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">

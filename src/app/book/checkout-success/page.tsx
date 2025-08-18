@@ -15,15 +15,8 @@ const PurchaseSuccess = () => {
     const fetchData = async () => {
       if (sessionId) {
         try {
-          // console.log("Fetching purchase data for session:", sessionId);
-          // console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
 
           const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/checkout/success`;
-          // console.log("Full API URL:", apiUrl);
-
-          console.log("Making request to:", apiUrl);
-          console.log("Request method: POST");
-          console.log("Request body:", JSON.stringify({ sessionId }));
 
           const res = await fetch(apiUrl, {
             method: "POST",
@@ -33,32 +26,21 @@ const PurchaseSuccess = () => {
             body: JSON.stringify({ sessionId }),
           });
 
-          console.log("Response status:", res.status);
-          console.log("Response ok:", res.ok);
-          console.log("Response headers:", Object.fromEntries(res.headers.entries()));
-
           if (!res.ok) {
             const errorText = await res.text();
-            console.error("API Error response:", errorText);
             throw new Error(`HTTP error! status: ${res.status}, response: ${errorText}`);
           }
 
           const data = await res.json();
-          // console.log("Purchase success response:", data);
-          // console.log("BookId in response:", data.bookId);
-          // console.log("BookId type:", typeof data.bookId);
 
           // APIからbookIdを取得
           if (data.bookId) {
-            // console.log("Setting bookId:", data.bookId);
             setBookId(data.bookId);
           } else {
-            // console.log("No bookId in response:", data);
-            // console.log("Response keys:", Object.keys(data));
+
             setError(`購入情報の取得に失敗しました。レスポンス: ${JSON.stringify(data)}`);
           }
         } catch (err) {
-          console.error("Error fetching data:", err);
           setError("購入情報の取得中にエラーが発生しました");
         } finally {
           setIsLoading(false);

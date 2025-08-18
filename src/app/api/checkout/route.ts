@@ -53,7 +53,6 @@ export async function POST(request: Request) {
       session_id: session.id,
     });
   } catch (err: unknown) {
-    console.error("Stripe checkout error:", err);
     const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
