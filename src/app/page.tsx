@@ -26,7 +26,8 @@ export default async function Home() {
           const purchasesData = await response.json();
           purchasedIds = purchasesData.map((purchase: Purchase) => purchase.bookId);
         }
-      } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_error) {
       }
     }
     
@@ -44,7 +45,8 @@ export default async function Home() {
         </main>
       </>
     );
-  } catch (error) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
 
   }
 }

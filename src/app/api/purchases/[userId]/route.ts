@@ -34,7 +34,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
     // Prisma接続テスト
     try {
       await prisma.$connect();
-    } catch (connectError) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_connectError) {
       return NextResponse.json(
         { error: "Database connection failed" },
         {

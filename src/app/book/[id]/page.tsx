@@ -35,7 +35,8 @@ const DetailBook = async ({ params }: { params: Promise<{ id: string }> }) => {
         </div>
       </div>
     );
-  } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
     return (
       <div className="container mx-auto p-4">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">

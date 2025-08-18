@@ -40,7 +40,8 @@ const PurchaseSuccess = () => {
 
             setError(`購入情報の取得に失敗しました。レスポンス: ${JSON.stringify(data)}`);
           }
-        } catch (err) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_err) {
           setError("購入情報の取得中にエラーが発生しました");
         } finally {
           setIsLoading(false);

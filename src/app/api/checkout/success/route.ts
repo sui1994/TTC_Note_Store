@@ -20,7 +20,10 @@ export async function POST(request: Request) {
   let stripe: Stripe;
   try {
     stripe = getStripeClient();
-  } catch (error) {
+
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
     return NextResponse.json({ error: "Server configuration error: Missing Stripe API key" }, { status: 500 });
   }
 
