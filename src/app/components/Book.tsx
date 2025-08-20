@@ -2,23 +2,27 @@
 
 import Image from "next/image";
 import React, { memo, useState } from "react";
-import { BookType, User } from "./types/types";
+import { BookType } from "./types/types";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 type BookProps = {
   book: BookType;
   isPurchased: boolean;
-  user?: User;
 };
 
-// eslint-disable-next-line react/display-name
-const Book = memo(({ book, isPurchased, user }: BookProps) => {
+const Book = memo(({ book, isPurchased }: BookProps) => {
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
+
+  // セッションからユーザー情報を取得
+  const user = session?.user as { id: string; name?: string | null; email?: string | null; image?: string | null } | undefined;
 
   //stripe checkout
   const startCheckout = async () => {
-
+    // console.log("Starting checkout for book:", bookId);
+    // console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
 
     try {
       const requestBody = {
@@ -28,6 +32,7 @@ const Book = memo(({ book, isPurchased, user }: BookProps) => {
         userId: user?.id,
       };
 
+      // console.log("Request body:", requestBody);
 
       const response = await fetch("/api/checkout", {
         method: "POST",
@@ -35,12 +40,14 @@ const Book = memo(({ book, isPurchased, user }: BookProps) => {
         body: JSON.stringify(requestBody),
       });
 
+      // console.log("Response status:", response.status);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const responseData = await response.json();
+      // console.log("Response data:", responseData);
 
       if (responseData && responseData.checkout_url) {
         if (responseData.session_id) {
@@ -48,6 +55,7 @@ const Book = memo(({ book, isPurchased, user }: BookProps) => {
         }
 
         //チェックアウト後のURL遷移先
+        // console.log("Redirecting to:", responseData.checkout_url);
         window.location.href = responseData.checkout_url;
       } else {
         console.error("Invalid response data:", responseData);
@@ -70,7 +78,9 @@ const Book = memo(({ book, isPurchased, user }: BookProps) => {
   };
 
   const handlePurchaseConfirm = () => {
-
+    // console.log("Purchase confirm clicked");
+    // console.log("User:", user);
+    // console.log("Book:", book);
 
     setShowModal(false); // モーダルを閉じる
 
@@ -99,12 +109,15 @@ const Book = memo(({ book, isPurchased, user }: BookProps) => {
     // ログイン状態をチェック
     if (!user) {
       // ログアウト状態の場合は購入モーダルを表示
+      // console.log("User not logged in, showing purchase modal");
       setShowModal(true);
     } else if (isPurchased) {
       // ログイン済みかつ購入済みの場合は詳細ページに遷移
+      // console.log("User logged in and purchased, navigating to detail page");
       router.push(`/book/${book.id}`);
     } else {
       // ログイン済��だが未購入の場合は購入モーダルを表示
+      // console.log("User logged in but not purchased, showing purchase modal");
       setShowModal(true);
     }
   };
@@ -182,5 +195,7 @@ const Book = memo(({ book, isPurchased, user }: BookProps) => {
     </>
   );
 });
+
+Book.displayName = "Book";
 
 export default Book;

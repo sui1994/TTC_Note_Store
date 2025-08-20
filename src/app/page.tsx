@@ -1,10 +1,13 @@
 import Book from "./components/Book";
 import { getAllBooks } from "@/lib/microcms/client";
-import { BookType, Purchase } from "./components/types/types";
+import { BookType } from "./components/types/types";
 import { getServerSession } from "next-auth/next";
 import { nextAuthOptions } from "@/lib/next-auth/options";
 import { User } from "./components/types/types";
 
+import prisma from "@/lib/prisma";
+
+// Force dynamic rendering since this page uses session/headers
 export const dynamic = "force-dynamic";
 
 
@@ -21,22 +24,22 @@ export default async function Home() {
 
     if (user && user.id) {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchases/${user.id}`);
-        if (response.ok) {
-          const purchasesData = await response.json();
-          purchasedIds = purchasesData.map((purchase: Purchase) => purchase.bookId);
-        }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (_error) {
+
+        const purchasesData = await prisma.purchase.findMany({
+          where: { userId: user.id },
+        });
+        purchasedIds = purchasesData.map((purchase) => purchase.bookId);
+      } catch (error) {
+        console.error("購入情報の取得に失敗しました:", error);
       }
     }
-    
+
     return (
       <>
         <main className="flex flex-wrap justify-center items-center md:mt-20 mt-20">
           <h2 className="text-center w-full font-bold text-3xl mb-2">Book Commerce</h2>
           {contents.length > 0 ? (
-            contents.map((book: BookType) => <Book key={book.id} book={book} isPurchased={purchasedIds.includes(book.id)} user={user} />)
+            contents.map((book: BookType) => <Book key={book.id} book={book} isPurchased={purchasedIds.includes(book.id)} />)
           ) : (
             <div className="text-center w-full py-8">
               <p className="text-gray-500">書籍を読み込み中...</p>
@@ -45,8 +48,17 @@ export default async function Home() {
         </main>
       </>
     );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_error) {
-
+  } catch (error) {
+    console.error("ホームページでエラーが発生しました:", error);
+    return (
+      <>
+        <main className="flex flex-wrap justify-center items-center md:mt-20 mt-20">
+          <h2 className="text-center w-full font-bold text-3xl mb-2">Book Commerce</h2>
+          <div className="text-center w-full py-8">
+            <p className="text-red-500">エラーが発生しました。管理者に連絡してください。</p>
+          </div>
+        </main>
+      </>
+    );
   }
 }
