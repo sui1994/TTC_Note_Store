@@ -13,8 +13,6 @@ export const dynamic = "force-dynamic";
 
 async function getPurchasedBooks(userId: string): Promise<BookType[]> {
   try {
-    console.log("Fetching purchases for user:", userId);
-
     // Server ComponentでPrismaを直接使用
     const purchases = await prisma.purchase.findMany({
       where: {
@@ -22,22 +20,17 @@ async function getPurchasedBooks(userId: string): Promise<BookType[]> {
       },
     });
 
-    console.log("Purchases found:", purchases.length);
-    console.log("Purchases data:", purchases);
-
     if (purchases.length === 0) {
-      console.log("No purchases found for user");
       return [];
     }
 
     // 各購入に対して書籍詳細を取得
     const booksPromises = purchases.map(async (purchase: Purchase) => {
       try {
-        console.log("Fetching book:", purchase.bookId);
         const book = await getBook(purchase.bookId);
         return book;
       } catch (error) {
-        console.error(`Failed to fetch book ${purchase.bookId}:`, error);
+        console.error(`書籍の取得に失敗しました ${purchase.bookId}:`, error);
         return null;
       }
     });
@@ -46,11 +39,10 @@ async function getPurchasedBooks(userId: string): Promise<BookType[]> {
 
     // nullを除外して有効な書籍のみを返す
     const validBooks = books.filter((book): book is BookType => book !== null);
-    console.log("Valid books found:", validBooks.length);
 
     return validBooks;
   } catch (error) {
-    console.error("Error in getPurchasedBooks:", error);
+    console.error("getPurchasedBooksでエラーが発生しました:", error);
     return [];
   }
 }
@@ -64,7 +56,6 @@ export default async function ProfilePage() {
     }
 
     const user = (session as { user: { id: string; name?: string | null; email?: string | null; image?: string | null } }).user;
-    console.log("User ID:", user.id);
 
     // ユーザーIDが存在する場合のみ購入履歴を取得
     let purchasedBooks: BookType[] = [];
@@ -98,7 +89,7 @@ export default async function ProfilePage() {
       </div>
     );
   } catch (error) {
-    console.error("Error in ProfilePage:", error);
+    console.error("ProfilePageでエラーが発生しました:", error);
     return (
       <div className="container mx-auto p-4">
         <h1 className="text-xl font-bold mb-4">プロフィール</h1>

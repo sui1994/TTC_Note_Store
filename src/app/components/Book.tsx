@@ -196,4 +196,6 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
   );
 });
 
+Book.displayName = "Book";
+
 export default Book;
