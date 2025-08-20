@@ -89,7 +89,9 @@ export default async function ProfilePage() {
       </div>
     );
   } catch (error) {
-    console.error("ProfilePageでエラーが発生しました:", error);
+        if (process.env.NODE_ENV === "development") {
+      console.error("ProfilePageでエラーが発生しました:", error);
+    }
     return (
       <div className="container mx-auto p-4">
         <h1 className="text-xl font-bold mb-4">プロフィール</h1>
