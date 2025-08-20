@@ -13,7 +13,9 @@ export const dynamic = "force-dynamic";
 
 async function getPurchasedBooks(userId: string): Promise<BookType[]> {
   try {
-    console.log("Fetching purchases for user:", userId);
+    if (process.env.NODE_ENV === "development") {
+      console.log("Fetching purchases for user:", userId);
+    }
 
     // Server ComponentでPrismaを直接使用
     const purchases = await prisma.purchase.findMany({
