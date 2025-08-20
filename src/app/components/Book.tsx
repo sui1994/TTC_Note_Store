@@ -11,7 +11,6 @@ type BookProps = {
   isPurchased: boolean;
 };
 
-// eslint-disable-next-line react/display-name
 const Book = memo(({ book, isPurchased }: BookProps) => {
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
