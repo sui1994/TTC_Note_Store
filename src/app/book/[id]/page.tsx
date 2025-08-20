@@ -2,21 +2,21 @@
 import Image from "next/image";
 import React from "react";
 
-// Force dynamic rendering to avoid build-time errors
+// ビルド時エラーを回避するため、動的レンダリングを強制
 export const dynamic = "force-dynamic";
 
 const DetailBook = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
 
   if (!id) {
-    return <div>Book ID not found</div>;
+    return <div>書籍IDが見つかりません</div>;
   }
 
   try {
     const book = await getBook(id);
 
     if (!book) {
-      return <div>Book not found</div>;
+      return <div>書籍が見つかりません</div>;
     }
 
     return (
@@ -40,8 +40,8 @@ const DetailBook = async ({ params }: { params: Promise<{ id: string }> }) => {
     return (
       <div className="container mx-auto p-4">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h2 className="text-xl font-bold text-red-800">Error Loading Book</h2>
-          <p className="text-red-600 mt-2">Unable to load book details. Please check your configuration and try again.</p>
+          <h2 className="text-xl font-bold text-red-800">書籍の詳細を読み込めませんでした。</h2>
+          <p className="text-red-600 mt-2">設定を確認してもう一度お試しください。</p>
         </div>
       </div>
     );

@@ -14,8 +14,8 @@ export const nextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "database" as const,
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-    updateAge: 24 * 60 * 60, // 24 hours
+    maxAge: 30 * 24 * 60 * 60, // 30日間
+    updateAge: 24 * 60 * 60, // 24時間
   },
   callbacks: {
     session: ({ session, user }: { session: { expires: string; user?: { name?: string | null; email?: string | null; image?: string | null } }; user: { id: string } }) => {
@@ -47,7 +47,7 @@ export const nextAuthOptions = {
       try {
         await prisma.$disconnect();
       } catch (error) {
-        console.error("Error disconnecting Prisma:", error);
+        console.error("Prismaの切断中にエラーが発生しました:", error);
       }
     },
   },

@@ -28,7 +28,7 @@ const PurchaseSuccess = () => {
 
           if (!res.ok) {
             const errorText = await res.text();
-            throw new Error(`HTTP error! status: ${res.status}, response: ${errorText}`);
+            throw new Error(`HTTPエラー! ステータス: ${res.status}, レスポンス: ${errorText}`);
           }
 
           const data = await res.json();

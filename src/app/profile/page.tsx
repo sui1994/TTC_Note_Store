@@ -30,7 +30,7 @@ async function getPurchasedBooks(userId: string): Promise<BookType[]> {
         const book = await getBook(purchase.bookId);
         return book;
       } catch (error) {
-        console.error(`書籍の取得に失敗しました ${purchase.bookId}:`, error);
+        console.error(`書籍の取得に失敗しました: ${purchase.bookId}`, error);
         return null;
       }
     });
