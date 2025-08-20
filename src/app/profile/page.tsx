@@ -39,7 +39,30 @@ async function getPurchasedBooks(userId: string): Promise<BookType[]> {
         const book = await getBook(purchase.bookId);
         return book;
       } catch (error) {
-        console.error(`Failed to fetch book ${purchase.bookId}:`, error);
+    if (process.env.NODE_ENV === "development") {
+      console.log("Purchases found:", purchases.length);
+      console.log("Purchases data:", purchases);
+    }
+
+    if (purchases.length === 0) {
+      if (process.env.NODE_ENV === "development") {
+        console.log("No purchases found for user");
+      }
+      return [];
+    }
+
+    // 各購入に対して書籍詳細を取得
+    const booksPromises = purchases.map(async (purchase: Purchase) => {
+      try {
+        if (process.env.NODE_ENV === "development") {
+          console.log("Fetching book:", purchase.bookId);
+        }
+        const book = await getBook(purchase.bookId);
+        return book;
+      } catch (error) {
+        if (process.env.NODE_ENV === "development") {
+          console.error(`Failed to fetch book ${purchase.bookId}:`, error);
+        }
         return null;
       }
     });
