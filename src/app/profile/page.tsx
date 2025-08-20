@@ -25,7 +25,9 @@ async function getPurchasedBooks(userId: string): Promise<BookType[]> {
     });
 
     console.log("Purchases found:", purchases.length);
-    console.log("Purchases data:", purchases);
+    if (process.env.NODE_ENV === "development") {
+      console.log("Purchases data:", purchases);
+    }
 
     if (purchases.length === 0) {
       console.log("No purchases found for user");
