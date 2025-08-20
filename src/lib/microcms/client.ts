@@ -11,7 +11,7 @@ export const getAllBooks = async () => {
     endpoint: "bookcommerce",
     customRequestInit: {
       next: {
-        revalidate: 3600,
+        revalidate: 3600, // 1時間のキャッシュ
       },
     },
   });
