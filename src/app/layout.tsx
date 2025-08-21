@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import Header from "./components/Header";
-import { NextAuthProvider } from "@/lib/next-auth/provider";
+import { Providers } from "./providers";
 
 const notoSansJP = Noto_Sans_JP({ subsets: ["latin"] });
 
@@ -12,18 +12,18 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-  children,
-}: Readonly<{
+                                     children,
+                                   }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
     <html lang="ja">
-      <body className={notoSansJP.className + " bg-background text-foreground"}>
-        <NextAuthProvider>
-          <Header />
-          {children}
-        </NextAuthProvider>
-      </body>
+    <body className={notoSansJP.className + " bg-background text-foreground"}>
+    <Providers>
+    <Header />
+    {children}
+    </Providers>
+    </body>
     </html>
   );
 }
