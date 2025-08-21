@@ -14,8 +14,8 @@ export const nextAuthOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "database",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-    updateAge: 24 * 60 * 60, // 24 hours
+    maxAge: 30 * 24 * 60 * 60,
+    updateAge: 24 * 60 * 60,
   },
   callbacks: {
     session: ({ session, user }) => {
@@ -27,7 +27,6 @@ export const nextAuthOptions: NextAuthOptions = {
   },
   events: {
     async signOut({ session, token }) {
-      // セッション削除時のエラーハンドリング
       console.log("User signed out:", session?.user?.email || "Unknown user");
     },
   },

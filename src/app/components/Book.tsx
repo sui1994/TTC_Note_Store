@@ -8,7 +8,7 @@ import { useSession } from "next-auth/react";
 
 type BookProps = {
   book: BookType;
-  user?: any; // オプショナルに変更
+  user?: any;
   isPurchased: boolean;
 };
 
@@ -18,10 +18,8 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
   const router = useRouter();
   const { data: session } = useSession();
 
-  // セッションからユーザー情報を取得
   const user = session?.user;
 
-  //stripe checkout
   const startCheckout = async (bookId: number) => {
     console.log("Starting checkout for book:", bookId);
     console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
@@ -56,7 +54,6 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
           sessionStorage.setItem("stripeSessionId", responseData.session_id);
         }
 
-        //チェックアウト後のURL遷移先
         console.log("Redirecting to:", responseData.checkout_url);
         window.location.href = responseData.checkout_url;
       } else {
@@ -73,8 +70,6 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
     if (!isPurchased) {
       setShowModal(true);
     } else {
-      // ここで既に購入済みであることをユーザーに通知する処理を追加できます。
-      // 例: アラートを表示する、またはUI上でメッセージを表示する。
       alert("その商品は購入済みです。");
     }
   };
@@ -84,14 +79,13 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
     console.log("User:", user);
     console.log("Book:", book);
 
-    setShowModal(false); // モーダルを閉じる
+    setShowModal(false);
 
     if (!user) {
       console.log("No user, redirecting to login");
       router.push("/login");
     } else {
       console.log("User exists, starting checkout");
-      //Stripe購入画面へ。購入済みならそのまま本ページへ。
       startCheckout(book.id);
     }
   };
@@ -102,7 +96,6 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
 
   return (
     <>
-      {/* アニメーションスタイル */}
       <style jsx global>{`
         @keyframes fadeIn {
           from {
@@ -123,7 +116,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
         <a onClick={handlePurchaseClick} className="cursor-pointer shadow-2xl duration-300 hover:translate-y-1 hover:shadow-none">
           <Image
             priority
-            src={book.thumbnail.url || "/default_icon.png"} // サムネイルが無い場合はデフォルト画像を表示
+            src={book.thumbnail.url || "/default_icon.png"}
             alt={book.title}
             width={450}
             height={350}
@@ -131,7 +124,6 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
           />
           <div className="px-4 py-4 bg-slate-100 rounded-b-md">
             <h2 className="text-lg font-semibold">{book.title}</h2>
-            {/* <p className="mt-2 text-lg text-slate-600">この本は○○...</p> */}
             <p className="mt-2 text-md text-slate-700">値段：{book.price}円</p>
           </div>
         </a>
