@@ -53,7 +53,7 @@ export const getBook = async (contentId: string) => {
       contentId,
     });
 
-    console.log("getBook response:", detailBook);
+    
     return detailBook;
   } catch (error) {
     throw error;
