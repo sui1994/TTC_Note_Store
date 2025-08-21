@@ -42,12 +42,6 @@ export const nextAuthOptions = {
   },
   events: {
     async signOut() {
-      // セッション削除時のエラーハンドリング
-      try {
-        await prisma.$disconnect();
-      } catch (error) {
-        console.error("Error disconnecting Prisma:", error);
-      // Prismaの切断は不要です。グローバルなPrismaクライアントはアプリケーション全体で共有されるため、ここで切断すると他のセッションに影響します。
     },
   },
 };
