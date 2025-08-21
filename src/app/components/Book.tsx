@@ -30,7 +30,6 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
         userId: user?.id,
       };
 
-      // console.log("Request body:", requestBody);
 
       const response = await fetch("/api/checkout", {
         method: "POST",
@@ -79,7 +78,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
     if (!user) {
       router.push("/api/auth/signin");
     } else {
-      //Stripe購入画面へ。購入済みならそのまま本ページへ。
+      //Stripe購入画面へ。
       startCheckout();
     }
   };
