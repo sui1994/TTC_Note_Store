@@ -19,7 +19,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
   // セッションからユーザー情報を取得
   const user = session?.user as { id: string; name?: string | null; email?: string | null; image?: string | null } | undefined;
 
-  //stripe checkout
+  //stripe購入画面
   const startCheckout = async () => {
 
     try {
