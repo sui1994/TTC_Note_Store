@@ -115,7 +115,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
       
       router.push(`/book/${book.id}`);
     } else {
-      // ログイン済だが未購入の場合は購入モーダルを表示
+      // ログイン済みだが未購入の場合は購入モーダルを表示
       
       setShowModal(true);
     }
