@@ -23,8 +23,8 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
 
   //stripe checkout
   const startCheckout = async (bookId: string) => {
-    // console.log("Starting checkout for book:", bookId);
-    // console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
+    
+    
 
     try {
       const requestBody = {
@@ -34,7 +34,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
         userId: user?.id,
       };
 
-      // console.log("Request body:", requestBody);
+      
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
         method: "POST",
@@ -42,14 +42,14 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
         body: JSON.stringify(requestBody),
       });
 
-      // console.log("Response status:", response.status);
+      
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const responseData = await response.json();
-      // console.log("Response data:", responseData);
+      
 
       if (responseData && responseData.checkout_url) {
         if (responseData.session_id) {
@@ -57,7 +57,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
         }
 
         //チェックアウト後のURL遷移先
-        // console.log("Redirecting to:", responseData.checkout_url);
+        
         window.location.href = responseData.checkout_url;
       } else {
         console.error("Invalid response data:", responseData);
@@ -80,17 +80,14 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
   };
 
   const handlePurchaseConfirm = () => {
-    // console.log("Purchase confirm clicked");
-    // console.log("User:", user);
-    // console.log("Book:", book);
 
     setShowModal(false); // モーダルを閉じる
 
     if (!user) {
-      // console.log("No user, redirecting to login");
+      
       router.push("/login");
     } else {
-      // console.log("User exists, starting checkout");
+      
       //Stripe購入画面へ。購入済みならそのまま本ページへ。
       startCheckout(book.id);
     }
@@ -111,15 +108,15 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
     // ログイン状態をチェック
     if (!user) {
       // ログアウト状態の場合は購入モーダルを表示
-      // console.log("User not logged in, showing purchase modal");
+      
       setShowModal(true);
     } else if (isPurchased) {
       // ログイン済みかつ購入済みの場合は詳細ページに遷移
-      // console.log("User logged in and purchased, navigating to detail page");
+      
       router.push(`/book/${book.id}`);
     } else {
-      // ログイン済��だが未購入の場合は購入モーダルを表示
-      // console.log("User logged in but not purchased, showing purchase modal");
+      // ログイン済だが未購入の場合は購入モーダルを表示
+      
       setShowModal(true);
     }
   };
