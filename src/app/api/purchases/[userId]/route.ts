@@ -22,7 +22,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
 
 
     if (!userId) {
-      console.error("API: No userId provided");
       return NextResponse.json(
         { error: "User ID is required" },
         {
