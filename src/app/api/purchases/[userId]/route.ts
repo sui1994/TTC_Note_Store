@@ -36,7 +36,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
     try {
       await prisma.$connect();
     } catch (connectError) {
-      console.error("API: Prisma connection failed:", connectError);
+      // Logging removed for production consistency
       return NextResponse.json(
         { error: "Database connection failed" },
         {
