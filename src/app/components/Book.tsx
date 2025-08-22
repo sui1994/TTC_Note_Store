@@ -71,6 +71,8 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
     if (isPurchased) {
       // 購入済みの場合はアラートを表示
       alert("その商品は購入済みですにゃ。");
+    } else {
+      setShowModal(true);
     }
   };
 
