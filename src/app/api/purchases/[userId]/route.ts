@@ -20,7 +20,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
   try {
     const { userId } = await params;
 
-    console.log("API: Fetching purchases for userId:", userId);
 
     if (!userId) {
       console.error("API: No userId provided");
@@ -36,7 +35,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
     // Prisma接続テスト
     try {
       await prisma.$connect();
-      console.log("API: Prisma connected successfully");
     } catch (connectError) {
       console.error("API: Prisma connection failed:", connectError);
       return NextResponse.json(
@@ -54,8 +52,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
       },
     });
 
-    console.log("API: Found purchases:", purchases.length);
-    console.log("API: Purchases data:", purchases);
 
     return NextResponse.json(purchases, {
       headers: corsHeaders,
