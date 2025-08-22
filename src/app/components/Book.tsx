@@ -49,7 +49,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
         //チェックアウト後のURL遷移先
         window.location.href = responseData.checkout_url;
       } else {
-        console.error("Invalid response data:", responseData);
+        console.error("レスポンスデータが不正です:", responseData);
         alert("チェックアウトURLの取得に失敗しました");
       }
     } catch (err) {
