@@ -23,9 +23,6 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
 
   //stripe checkout
   const startCheckout = async (bookId: number) => {
-    console.log("Starting checkout for book:", bookId);
-    console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
-
     try {
       const requestBody = {
         bookId,
@@ -34,30 +31,23 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
         userId: user?.id,
       };
 
-      console.log("Request body:", requestBody);
-
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
       });
 
-      console.log("Response status:", response.status);
-
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const responseData = await response.json();
-      console.log("Response data:", responseData);
 
       if (responseData && responseData.checkout_url) {
         if (responseData.session_id) {
           sessionStorage.setItem("stripeSessionId", responseData.session_id);
         }
 
-        //チェックアウト後のURL遷移先
-        console.log("Redirecting to:", responseData.checkout_url);
         window.location.href = responseData.checkout_url;
       } else {
         console.error("Invalid response data:", responseData);
@@ -80,18 +70,11 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
   };
 
   const handlePurchaseConfirm = () => {
-    console.log("Purchase confirm clicked");
-    console.log("User:", user);
-    console.log("Book:", book);
-
-    setShowModal(false); // モーダルを閉じる
+    setShowModal(false);
 
     if (!user) {
-      console.log("No user, redirecting to login");
       router.push("/login");
     } else {
-      console.log("User exists, starting checkout");
-      //Stripe購入画面へ。購入済みならそのまま本ページへ。
       startCheckout(book.id);
     }
   };
