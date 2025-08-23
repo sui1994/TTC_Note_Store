@@ -10,10 +10,8 @@ import prisma from "@/lib/prisma";
 // Force dynamic rendering since this page uses session/headers
 export const dynamic = "force-dynamic";
 
-
 export default async function Home() {
   try {
-
     const session = await getServerSession(nextAuthOptions);
     const user = (session as { user?: User })?.user;
 
@@ -24,7 +22,6 @@ export default async function Home() {
 
     if (user && user.id) {
       try {
-
         const purchasesData = await prisma.purchase.findMany({
           where: { userId: user.id },
         });

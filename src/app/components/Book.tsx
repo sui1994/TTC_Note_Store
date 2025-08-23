@@ -20,7 +20,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
   const user = session?.user as { id: string; name?: string | null; email?: string | null; image?: string | null } | undefined;
 
   //stripe checkout
-  const startCheckout = async () => {
+  const startCheckout = async (bookId: number) => {
     try {
       const requestBody = {
         bookId: book.id,
@@ -29,7 +29,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
         userId: user?.id,
       };
 
-      const response = await fetch("/api/checkout", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
@@ -46,7 +46,6 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
           sessionStorage.setItem("stripeSessionId", responseData.session_id);
         }
 
-        //チェックアウト後のURL遷移先
         window.location.href = responseData.checkout_url;
       } else {
         console.error("レスポンスデータが不正です:", responseData);
@@ -69,13 +68,12 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
   };
 
   const handlePurchaseConfirm = () => {
-    setShowModal(false); // モーダルを閉じる
+    setShowModal(false);
 
     if (!user) {
-      router.push("/api/auth/signin");
+      router.push("/login");
     } else {
-      //Stripe購入画面へ。購入済みならそのまま本ページへ。
-      startCheckout();
+      startCheckout(book.id);
     }
   };
 
