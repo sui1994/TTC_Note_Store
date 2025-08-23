@@ -6,7 +6,6 @@ import { nextAuthOptions } from "@/lib/next-auth/options";
 import { User } from "./components/types/types";
 
 export default async function Home() {
-
   const session = await getServerSession(nextAuthOptions);
   const user = session?.user as User;
 
@@ -20,6 +19,8 @@ export default async function Home() {
       if (response.ok) {
         const purchasesData = await response.json();
         purchasedIds = purchasesData.map((purchase: Purchase) => purchase.bookId);
+      } else {
+        console.error("Failed to fetch purchases:", response.status, response.statusText);
       }
     } catch (error) {
       console.error("Error fetching purchases:", error);

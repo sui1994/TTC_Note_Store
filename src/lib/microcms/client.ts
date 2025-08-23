@@ -9,16 +9,14 @@ export const client = createClient({
 // microCMS接続テスト関数
 export const testConnection = async () => {
   try {
-    
-    
-    
-
     const response = await client.getList({
       endpoint: "bookcommerce",
       queries: { limit: 1 },
     });
 
-    
+    if (process.env.NODE_ENV === "development") {
+      console.log("Connection test successful:", response);
+    }
     return true;
   } catch (error) {
     console.error("Connection test failed:", error);
@@ -28,25 +26,18 @@ export const testConnection = async () => {
 
 export const getAllBooks = async () => {
   try {
-    
-    
-    
-
     const allBooks = await client.getList<BookType>({
       endpoint: "bookcommerce",
     });
 
-
     return allBooks;
   } catch (error) {
-    console.error("Error fetching all books from microCMS:", error);
     throw error;
   }
 };
 
 export const getBook = async (contentId: string) => {
   try {
-    
     if (!contentId || contentId === "null" || contentId === "undefined") {
       throw new Error("Invalid content ID");
     }
@@ -56,12 +47,8 @@ export const getBook = async (contentId: string) => {
       contentId,
     });
 
-    
     return detailBook;
   } catch (error) {
-    
-    
-    
     throw error;
   }
 };
