@@ -5,9 +5,7 @@ import { getServerSession } from "next-auth/next";
 import { nextAuthOptions } from "@/lib/next-auth/options";
 import { User } from "./components/types/types";
 
-
 export default async function Home() {
-
   const session = await getServerSession(nextAuthOptions);
   const user = (session as { user?: User })?.user;
 
