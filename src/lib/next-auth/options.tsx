@@ -24,9 +24,28 @@ export const nextAuthOptions: NextAuthOptions = {
         user: { ...session.user, id: user.id },
       };
     },
+    async redirect({ url, baseUrl }) {
+      // 認証後は常にホームページにリダイレクト
+      if (url.startsWith("/login")) {
+        return baseUrl;
+      }
+      // 相対URLの場合はbaseUrlと結合
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+      // 同じオリジンの場合はそのまま
+      if (new URL(url).origin === baseUrl) {
+        return url;
+      }
+      // それ以外はホームページ
+      return baseUrl;
+    },
   },
+  events: {
     async signOut({ session, token }) {
       console.log("User signed out", { session, token });
+      // 必要に応じてクリーンアップ処理を追加
+      // 例: セッション関連のキャッシュクリア、ログ記録など
     },
   },
 };
