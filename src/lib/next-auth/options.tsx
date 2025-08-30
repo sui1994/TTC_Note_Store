@@ -25,8 +25,8 @@ export const nextAuthOptions: NextAuthOptions = {
       };
     },
   },
-  events: {
     async signOut({ session, token }) {
+      console.log("User signed out", { session, token });
     },
   },
 };
