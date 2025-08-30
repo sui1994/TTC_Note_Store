@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { BookType } from "../components/types/types";
 import { Purchase } from "@prisma/client";
 import { getBook } from "@/lib/microcms/client";
-import PurchaseDetailBook from "../components/PurcehaseDetailBook";
+import PurchaseDetailBook from "../components/PurchaseDetailBook";
 import { prisma } from "@/lib/prisma";
 
 async function getPurchasedBooks(userId: string): Promise<BookType[]> {
