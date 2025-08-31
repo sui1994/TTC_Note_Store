@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 const Header = () => {
   const { data: session, status } = useSession();
@@ -24,19 +24,19 @@ const Header = () => {
               <Link href="/profile" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                 プロフィール
               </Link>
-              <button onClick={() => signOut()} className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+              <Link href="/api/auth/signout" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                 ログアウト
-              </button>
+              </Link>
               <Link href="/profile">
                 <Image width={50} height={50} alt="profile_icon" src={session.user?.image || "/default_icon.png"} className="rounded-full" />
               </Link>
             </>
           ) : (
             <>
-              <Link href="/login" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+              <Link href="/api/auth/signin" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                 ログイン
               </Link>
-              <Link href="/login">
+              <Link href="/api/auth/signin">
                 <Image width={50} height={50} alt="default_icon" src="/default_icon.png" className="rounded-full border-2 border-gray-300 hover:border-white transition-colors" />
               </Link>
             </>

@@ -8,7 +8,6 @@ import { useSession } from "next-auth/react";
 
 type BookProps = {
   book: BookType;
-  user?: any; // オプショナルに変更
   isPurchased: boolean;
 };
 
@@ -19,7 +18,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
   const { data: session } = useSession();
 
   // セッションからユーザー情報を取得
-  const user = session?.user;
+  const user = session?.user as { id: string; name?: string | null; email?: string | null; image?: string | null } | undefined;
 
   //stripe checkout
   const startCheckout = async (bookId: string) => {
@@ -64,7 +63,6 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
       // 購入済みの場合はアラートを表示
       alert("その商品は購入済みですにゃ。");
     } else {
-      // 未購入の場合は購入確認モーダルを表示
       setShowModal(true);
     }
   };

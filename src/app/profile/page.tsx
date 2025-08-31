@@ -1,5 +1,5 @@
-﻿import { nextAuthOptions } from "@/lib/next-auth/options";
-import { getServerSession } from "next-auth";
+import { nextAuthOptions } from "@/lib/next-auth/options";
+import { getServerSession } from "next-auth/next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { BookType } from "../components/types/types";
@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
 
 async function getPurchasedBooks(userId: string): Promise<BookType[]> {
   try {
-    console.log("Fetching purchases for user:", userId);
+    
 
     // Server ComponentでPrismaを直接使用
     const purchases = await prisma.purchase.findMany({
@@ -19,18 +19,15 @@ async function getPurchasedBooks(userId: string): Promise<BookType[]> {
       },
     });
 
-    console.log("Purchases found:", purchases.length);
-    console.log("Purchases data:", purchases);
-
     if (purchases.length === 0) {
-      console.log("No purchases found for user");
+      
       return [];
     }
 
     // 各購入に対して書籍詳細を取得
     const booksPromises = purchases.map(async (purchase: Purchase) => {
       try {
-        console.log("Fetching book:", purchase.bookId);
+        
         const book = await getBook(purchase.bookId);
         return book;
       } catch (error) {
@@ -43,7 +40,7 @@ async function getPurchasedBooks(userId: string): Promise<BookType[]> {
 
     // nullを除外して有効な書籍のみを返す
     const validBooks = books.filter((book): book is BookType => book !== null);
-    console.log("Valid books found:", validBooks.length);
+    
 
     return validBooks;
   } catch (error) {
@@ -56,12 +53,12 @@ export default async function ProfilePage() {
   try {
     const session = await getServerSession(nextAuthOptions);
 
-    if (!session?.user) {
+    if (!(session as { user?: { id: string; name?: string | null; email?: string | null; image?: string | null } })?.user) {
       redirect("/login");
     }
 
-    const user = session.user;
-    console.log("User ID:", user.id);
+    const user = (session as { user: { id: string; name?: string | null; email?: string | null; image?: string | null } }).user;
+    
 
     // ユーザーIDが存在する場合のみ購入履歴を取得
     let purchasedBooks: BookType[] = [];

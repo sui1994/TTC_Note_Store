@@ -1,10 +1,9 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { NextAuthOptions } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import { prisma } from "@/lib/prisma";
 
-export const nextAuthOptions: NextAuthOptions = {
-  debug: false,
+export const nextAuthOptions = {
+  debug: process.env.NODE_ENV === "development",
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_ID!,
@@ -13,18 +12,18 @@ export const nextAuthOptions: NextAuthOptions = {
   ],
   adapter: PrismaAdapter(prisma),
   session: {
-    strategy: "database",
+    strategy: "database" as const,
     maxAge: 30 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // 24 hours
   },
   callbacks: {
-    session: ({ session, user }) => {
+    session: ({ session, user }: { session: { expires: string; user?: { name?: string | null; email?: string | null; image?: string | null } }; user: { id: string } }) => {
       return {
         ...session,
         user: { ...session.user, id: user.id },
       };
     },
-    async redirect({ url, baseUrl }) {
+    async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
       // 認証後は常にホームページにリダイレクト
       if (url.startsWith("/login")) {
         return baseUrl;
@@ -42,7 +41,7 @@ export const nextAuthOptions: NextAuthOptions = {
     },
   },
   events: {
-    async signOut({ session }) {
+    async signOut({ session }: { session?: any }) {
       try {
         // データベースセッション戦略を使用している場合、セッションは自動的に削除される
         // 追加のクリーンアップが必要な場合はここに実装
