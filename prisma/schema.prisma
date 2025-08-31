@@ -46,10 +46,10 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  purchases     Purchases[]
+  purchases     Purchase[]
 }
 
-model Purchases {
+model Purchase {
   id        String  @id @default(cuid())
   userId    String
   bookId String
