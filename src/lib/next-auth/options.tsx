@@ -14,8 +14,8 @@ export const nextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "database" as const,
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-    updateAge: 24 * 60 * 60, // 24 hours
+    maxAge: 30 * 24 * 60 * 60, // 30日間
+    updateAge: 24 * 60 * 60, // 24時間
   },
   callbacks: {
     session: ({ session, user }: { session: { expires: string; user?: { name?: string | null; email?: string | null; image?: string | null } }; user: { id: string } }) => {
@@ -42,23 +42,12 @@ export const nextAuthOptions = {
     },
   },
   events: {
-    async signOut({ session }: { session?: any }) {
+    async signOut() {
+      // セッション削除時のエラーハンドリング
       try {
-        // データベースセッション戦略を使用している場合、セッションは自動的に削除される
-        // 追加のクリーンアップが必要な場合はここに実装
-
-        if (process.env.NODE_ENV === "development") {
-          console.log("User signed out:", session?.user?.email || "Unknown user");
-        }
-
-        // Prisma接続のクリーンアップ
         await prisma.$disconnect();
-
-        // 必要に応じて追加のクリーンアップ処理
-        // 例: キャッシュのクリア、ログの記録など
       } catch (error) {
-        console.error("Error during sign out:", error);
-        // サインアウト処理でエラーが発生してもユーザーの操作は継続させる
+        console.error("Prismaの切断中にエラーが発生しました:", error);
       }
     },
   },
