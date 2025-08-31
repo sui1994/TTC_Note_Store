@@ -15,10 +15,7 @@ const PurchaseSuccess = () => {
     const fetchData = async () => {
       if (sessionId) {
         try {
-          
-
           const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/checkout/success`;
-          
 
           const res = await fetch(apiUrl, {
             method: "POST",
@@ -28,8 +25,6 @@ const PurchaseSuccess = () => {
             body: JSON.stringify({ sessionId }),
           });
 
-          
-
           if (!res.ok) {
             const errorText = await res.text();
             console.error("API Error response:", errorText);
@@ -37,17 +32,11 @@ const PurchaseSuccess = () => {
           }
 
           const data = await res.json();
-          
-          
-          
 
           // APIからbookIdを取得
           if (data.bookId) {
-            
             setBookId(data.bookId);
           } else {
-            
-            
             setError(`購入情報の取得に失敗しました。レスポンス: ${JSON.stringify(data)}`);
           }
         } catch (err) {

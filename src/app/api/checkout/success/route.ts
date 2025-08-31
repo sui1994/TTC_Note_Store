@@ -8,28 +8,18 @@ export async function POST(request: Request) {
   const { sessionId } = await request.json();
 
   try {
-    // console.log("Retrieving Stripe session:", sessionId);
-
     if (!sessionId) {
-      throw new Error("Session ID is missing");
+      return NextResponse.json({ error: "Session ID is missing" }, { status: 400 });
     }
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    // // console.log("Stripe session retrieved successfully");
-    // // console.log("Stripe session details:", {
-    //   id: session.id,
-    //   client_reference_id: session.client_reference_id,
-    //   metadata: session.metadata,
-    //   payment_status: session.payment_status,
-    // });
-
     const bookId = session.metadata?.bookId;
-    // console.log("BookId from metadata:", bookId);
 
     if (!bookId) {
-      throw new Error("BookId not found in session metadata");
+      return NextResponse.json({ error: "BookId not found in session metadata" }, { status: 400 });
     }
 
+    // 既存の購入記録をチェック
     const existingPurchase = await prisma.purchase.findFirst({
       where: {
         userId: session.client_reference_id!,
@@ -37,38 +27,37 @@ export async function POST(request: Request) {
       },
     });
 
-    // console.log("Existing purchase check:", existingPurchase);
-
-    if (!existingPurchase) {
-      // console.log("Creating new purchase record");
-      const purchase = await prisma.purchase.create({
-        data: {
-          userId: session.client_reference_id!,
+    // 既に購入済みの場合
+    if (existingPurchase) {
+      return NextResponse.json(
+        {
+          message: "すでに購入済みです",
           bookId: bookId,
         },
-      });
-      // console.log("Purchase created:", purchase);
+        { status: 200 }
+      );
+    }
 
-      const response = {
+    // 新規購入記録を作成
+    const purchase = await prisma.purchase.create({
+      data: {
+        userId: session.client_reference_id!,
+        bookId: bookId,
+      },
+    });
+
+    return NextResponse.json(
+      {
         ...purchase,
         bookId: bookId,
-      };
-      // console.log("Returning response:", response);
-      return NextResponse.json(response);
-    } else {
-      // console.log("Purchase already exists");
-      const response = {
-        message: "すでに購入済みにゃ",
-        bookId: bookId,
-      };
-      // console.log("Returning response:", response);
-      return NextResponse.json(response);
-    }
+      },
+      { status: 201 }
+    );
   } catch (err) {
     console.error("Checkout success API error:", err);
     return NextResponse.json(
       {
-        error: "Internal server error",
+        error: "購入処理中にエラーが発生しました",
         details: err instanceof Error ? err.message : String(err),
       },
       { status: 500 }

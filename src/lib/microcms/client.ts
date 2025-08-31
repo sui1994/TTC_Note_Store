@@ -14,6 +14,9 @@ export const testConnection = async () => {
       queries: { limit: 1 },
     });
 
+    if (process.env.NODE_ENV === "development") {
+      console.log("Connection test successful:", response);
+    }
     return true;
   } catch (error) {
     console.error("Connection test failed:", error);
@@ -29,7 +32,6 @@ export const getAllBooks = async () => {
 
     return allBooks;
   } catch (error) {
-    console.error("Error fetching all books from microCMS:", error);
     throw error;
   }
 };

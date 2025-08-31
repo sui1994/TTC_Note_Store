@@ -21,7 +21,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
   const user = session?.user as { id: string; name?: string | null; email?: string | null; image?: string | null } | undefined;
 
   //stripe checkout
-  const startCheckout = async (bookId: number) => {
+  const startCheckout = async (bookId: string) => {
     try {
       const requestBody = {
         bookId: book.id,
@@ -92,15 +92,12 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
     // ログイン状態をチェック
     if (!user) {
       // ログアウト状態の場合は購入モーダルを表示
-
       setShowModal(true);
     } else if (isPurchased) {
       // ログイン済みかつ購入済みの場合は詳細ページに遷移
-
       router.push(`/book/${book.id}`);
     } else {
-      // ログイン済みだが未購入の場合は購入モーダルを表示
-
+      // ログイン済だが未購入の場合は購入モーダルを表示
       setShowModal(true);
     }
   };
