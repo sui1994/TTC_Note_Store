@@ -30,4 +30,36 @@ type User = {
   image?: string | null | undefined;
 };
 
-export type { BookType, Purchase, User };
+// NextAuth関連の型定義
+type NextAuthUser = {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+};
+
+type NextAuthSession = {
+  expires: string;
+  user?: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
+};
+
+type AuthenticatedSession = {
+  expires: string;
+  user: NextAuthUser;
+};
+
+type SessionCallbackParams = {
+  session: NextAuthSession;
+  user: { id: string };
+};
+
+type RedirectCallbackParams = {
+  url: string;
+  baseUrl: string;
+};
+
+export type { BookType, Purchase, User, NextAuthUser, NextAuthSession, AuthenticatedSession, SessionCallbackParams, RedirectCallbackParams };

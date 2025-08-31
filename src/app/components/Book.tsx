@@ -11,7 +11,6 @@ type BookProps = {
   isPurchased: boolean;
 };
 
-// eslint-disable-next-line react/display-name
 const Book = memo(({ book, isPurchased }: BookProps) => {
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
@@ -49,7 +48,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
 
         window.location.href = responseData.checkout_url;
       } else {
-        console.error("Invalid response data:", responseData);
+        console.error("レスポンスデータが不正です:", responseData);
         alert("チェックアウトURLの取得に失敗しました");
       }
     } catch (err) {
@@ -175,5 +174,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
     </>
   );
 });
+
+Book.displayName = "Book";
 
 export default Book;

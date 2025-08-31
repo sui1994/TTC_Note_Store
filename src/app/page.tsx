@@ -4,37 +4,57 @@ import { BookType, Purchase } from "./components/types/types";
 import { getServerSession } from "next-auth/next";
 import { nextAuthOptions } from "@/lib/next-auth/options";
 import { User } from "./components/types/types";
+import prisma from "@/lib/prisma";
+
+// Force dynamic rendering since this page uses session/headers
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const session = await getServerSession(nextAuthOptions);
-  const user = (session as { user?: User })?.user;
+  try {
+    const session = await getServerSession(nextAuthOptions);
+    const user = (session as { user?: User })?.user;
 
-  const { contents } = await getAllBooks();
+    const allBooks = await getAllBooks();
+    const contents = allBooks?.contents || [];
 
-  let purchasedIds: string[] = [];
+    let purchasedIds: string[] = [];
 
-  if (user && user.id) {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchases/${user.id}`);
-      if (response.ok) {
-        const purchasesData = await response.json();
-        purchasedIds = purchasesData.map((purchase: Purchase) => purchase.bookId);
-      } else {
-        console.error("Failed to fetch purchases:", response.status, response.statusText);
+    if (user && user.id) {
+      try {
+        const purchasesData = await prisma.purchase.findMany({
+          where: { userId: user.id },
+        });
+        purchasedIds = purchasesData.map((purchase) => purchase.bookId);
+      } catch (error) {
+        console.error("購入情報の取得に失敗しました:", error);
       }
-    } catch (error) {
-      console.error("Error fetching purchases:", error);
     }
-  }
 
-  return (
-    <>
-      <main className="flex flex-wrap justify-center items-center md:mt-20 mt-20">
-        <h2 className="text-center w-full font-bold text-3xl mb-2">Book Commerce</h2>
-        {contents.map((book: BookType) => (
-          <Book key={book.id} book={book} isPurchased={purchasedIds.includes(book.id)} />
-        ))}
-      </main>
-    </>
-  );
+    return (
+      <>
+        <main className="flex flex-wrap justify-center items-center md:mt-20 mt-20">
+          <h2 className="text-center w-full font-bold text-3xl mb-2">Book Commerce</h2>
+          {contents.length > 0 ? (
+            contents.map((book: BookType) => <Book key={book.id} book={book} isPurchased={purchasedIds.includes(book.id)} />)
+          ) : (
+            <div className="text-center w-full py-8">
+              <p className="text-gray-500">書籍を読み込み中...</p>
+            </div>
+          )}
+        </main>
+      </>
+    );
+  } catch (error) {
+    console.error("ホームページでエラーが発生しました:", error);
+    return (
+      <>
+        <main className="flex flex-wrap justify-center items-center md:mt-20 mt-20">
+          <h2 className="text-center w-full font-bold text-3xl mb-2">Book Commerce</h2>
+          <div className="text-center w-full py-8">
+            <p className="text-red-500">エラーが発生しました。管理者に連絡してください。</p>
+          </div>
+        </main>
+      </>
+    );
+  }
 }
