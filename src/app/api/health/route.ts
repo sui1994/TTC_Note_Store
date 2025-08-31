@@ -19,7 +19,7 @@ export async function GET() {
       .filter(([, exists]) => !exists)
       .map(([name]) => name);
 
-    const status = missingVars.length === 0 ? "healthy" : "unhealthy";
+    const status = missingVars.length === 0 ? "正常" : "異常";
 
     return NextResponse.json({
       status,
@@ -31,9 +31,9 @@ export async function GET() {
   } catch (error) {
     return NextResponse.json(
       {
-        status: "error",
+        status: "エラー",
         timestamp: new Date().toISOString(),
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : "不明なエラー",
       },
       { status: 500 }
     );

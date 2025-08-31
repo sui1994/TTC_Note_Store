@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import React, { memo, useState } from "react";
-import { BookType } from "./types/types";
+import { BookType, NextAuthUser } from "./types/types";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -17,7 +17,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
   const { data: session } = useSession();
 
   // セッションからユーザー情報を取得
-  const user = session?.user as { id: string; name?: string | null; email?: string | null; image?: string | null } | undefined;
+  const user = session?.user as NextAuthUser | undefined;
 
   //stripe checkout
   const startCheckout = async (bookId: string) => {

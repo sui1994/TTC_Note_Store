@@ -27,8 +27,7 @@ const PurchaseSuccess = () => {
 
           if (!res.ok) {
             const errorText = await res.text();
-            console.error("API Error response:", errorText);
-            throw new Error(`HTTP error! status: ${res.status}, response: ${errorText}`);
+            throw new Error(`HTTPエラー! ステータス: ${res.status}, レスポンス: ${errorText}`);
           }
 
           const data = await res.json();
@@ -39,8 +38,8 @@ const PurchaseSuccess = () => {
           } else {
             setError(`購入情報の取得に失敗しました。レスポンス: ${JSON.stringify(data)}`);
           }
-        } catch (err) {
-          console.error("Error fetching data:", err);
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_err) {
           setError("購入情報の取得中にエラーが発生しました");
         } finally {
           setIsLoading(false);
