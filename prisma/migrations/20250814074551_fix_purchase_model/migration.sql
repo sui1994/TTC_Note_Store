@@ -2,7 +2,6 @@ ALTER TABLE "public"."Purchases" DROP CONSTRAINT "Purchases_userId_fkey";
 
 DROP TABLE "public"."Purchases";
 
-
 CREATE TABLE "public"."Purchase" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,

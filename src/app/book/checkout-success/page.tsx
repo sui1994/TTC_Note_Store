@@ -15,7 +15,6 @@ const PurchaseSuccess = () => {
     const fetchData = async () => {
       if (sessionId) {
         try {
-
           const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/checkout/success`;
 
           const res = await fetch(apiUrl, {
@@ -38,7 +37,7 @@ const PurchaseSuccess = () => {
           if (data.bookId) {
             setBookId(data.bookId);
           } else {
-            setError("購入情報の取得に失敗しました");
+            setError(`購入情報の取得に失敗しました。レスポンス: ${JSON.stringify(data)}`);
           }
         } catch (err) {
           console.error("Error fetching data:", err);

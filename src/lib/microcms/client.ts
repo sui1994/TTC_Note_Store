@@ -25,18 +25,30 @@ export const testConnection = async () => {
 };
 
 export const getAllBooks = async () => {
-  return client.getList<BookType>({
-    endpoint: "bookcommerce",
-  });
+  try {
+    const allBooks = await client.getList<BookType>({
+      endpoint: "bookcommerce",
+    });
+
+    return allBooks;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const getBook = async (contentId: string) => {
-  if (!contentId || contentId === "null" || contentId === "undefined") {
-    throw new Error("Invalid content ID");
-  }
+  try {
+    if (!contentId || contentId === "null" || contentId === "undefined") {
+      throw new Error("Invalid content ID");
+    }
 
-  return client.get<BookType>({
-    endpoint: "bookcommerce",
-    contentId,
-  });
+    const detailBook = await client.get<BookType>({
+      endpoint: "bookcommerce",
+      contentId,
+    });
+
+    return detailBook;
+  } catch (error) {
+    throw error;
+  }
 };
