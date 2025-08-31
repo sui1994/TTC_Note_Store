@@ -6,26 +6,55 @@ export const client = createClient({
   apiKey: process.env.NEXT_PUBLIC_API_KEY!,
 });
 
-export const getAllBooks = async () => {
-  const allBooks = await client.getList<BookType>({
-    endpoint: "bookcommerce",
-    customRequestInit: {
-      next: {
-        revalidate: 3600, // 1時間のキャッシュ
-      },
-    },
-  });
+// microCMS接続テスト関数
+export const testConnection = async () => {
+  try {
+    const response = await client.getList({
+      endpoint: "bookcommerce",
+      queries: { limit: 1 },
+    });
 
-  return allBooks;
+    if (process.env.NODE_ENV === "development") {
+      console.log("Connection test successful:", response);
+    }
+    return true;
+  } catch (error) {
+    console.error("Connection test failed:", error);
+    return false;
+  }
+};
+
+export const getAllBooks = async () => {
+  try {
+    const allBooks = await client.getList<BookType>({
+      endpoint: "bookcommerce",
+      customRequestInit: {
+        cache: "no-store",
+      },
+    });
+
+    return allBooks;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const getBook = async (contentId: string) => {
-  const detailBook = await client.get<BookType>({
-    endpoint: "bookcommerce",
-    contentId: contentId,
-    customRequestInit: {
-      cache: "no-store",
-    },
-  });
-  return detailBook;
+  try {
+    if (!contentId || contentId === "null" || contentId === "undefined") {
+      throw new Error("Invalid content ID");
+    }
+
+    const detailBook = await client.get<BookType>({
+      endpoint: "bookcommerce",
+      contentId,
+      customRequestInit: {
+        cache: "no-store",
+      },
+    });
+
+    return detailBook;
+  } catch (error) {
+    throw error;
+  }
 };

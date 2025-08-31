@@ -20,10 +20,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
   try {
     const { userId } = await params;
 
-
     if (!userId) {
       return NextResponse.json(
-        { error: "ユーザーIDが必要です" },
+        { error: "User ID is required" },
         {
           status: 400,
           headers: corsHeaders,
@@ -34,10 +33,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
     // Prisma接続テスト
     try {
       await prisma.$connect();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_connectError) {
+    } catch (connectError) {
+      // Logging removed for production consistency
       return NextResponse.json(
-        { error: "データベース接続に失敗しました" },
+        { error: "Database connection failed" },
         {
           status: 500,
           headers: corsHeaders,
@@ -51,12 +50,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
       },
     });
 
-
     return NextResponse.json(purchases, {
       headers: corsHeaders,
     });
   } catch (err) {
-    return NextResponse.json({ error: "サーバー内部エラー", details: err instanceof Error ? err.message : "不明なエラー" }, { status: 500 });
+    console.error("API: Error in GET /api/purchases/[userId]:", err);
+    return NextResponse.json({ error: "Internal server error", details: err instanceof Error ? err.message : "Unknown error" }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }

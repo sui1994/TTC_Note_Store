@@ -5,7 +5,7 @@ import Stripe from "stripe";
 function getStripeClient() {
   const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeSecretKey) {
-    throw new Error("環境変数 STRIPE_SECRET_KEY が設定されていません");
+    throw new Error("STRIPE_SECRET_KEY environment variable is not set");
   }
 
   return new Stripe(stripeSecretKey, {
@@ -19,8 +19,8 @@ export async function POST(request: Request) {
   try {
     stripe = getStripeClient();
   } catch (error) {
-    console.error("Stripeの初期化エラー:", error);
-    return NextResponse.json({ error: "サーバー設定エラー: Stripe APIキーが見つかりません" }, { status: 500 });
+    console.error("Stripe initialization error:", error);
+    return NextResponse.json({ error: "Server configuration error: Missing Stripe API key" }, { status: 500 });
   }
 
   const { title, price, bookId, userId } = await request.json();
@@ -53,7 +53,8 @@ export async function POST(request: Request) {
       session_id: session.id,
     });
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : "不明なエラーが発生しました";
+    console.error("Stripe checkout error:", err);
+    const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

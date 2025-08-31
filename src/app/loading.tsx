@@ -1,13 +1,14 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import { ClipLoader } from "react-spinners";
 
-const LoadingSpinner = () => {
-  // スピナーのサイズや色をカスタマイズできます
-  const size = 50;
-  const color = "#123abc";
+interface LoadingSpinnerProps {
+  size?: number;
+  color?: string;
+}
 
+const LoadingSpinner = ({ size = 50, color = "#123abc" }: LoadingSpinnerProps) => {
   return (
     <div className="spinner-container flex items-center justify-center min-h-screen">
       <ClipLoader size={size} color={color} />

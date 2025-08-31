@@ -1,6 +1,7 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import GithubProvider from "next-auth/providers/github";
 import { prisma } from "@/lib/prisma";
+import { SessionCallbackParams, RedirectCallbackParams } from "@/app/components/types/types";
 
 export const nextAuthOptions = {
   debug: process.env.NODE_ENV === "development",
@@ -18,13 +19,13 @@ export const nextAuthOptions = {
     updateAge: 24 * 60 * 60, // 24時間
   },
   callbacks: {
-    session: ({ session, user }: { session: { expires: string; user?: { name?: string | null; email?: string | null; image?: string | null } }; user: { id: string } }) => {
+    session: ({ session, user }: SessionCallbackParams) => {
       return {
         ...session,
         user: { ...session.user, id: user.id },
       };
     },
-    async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
+    async redirect({ url, baseUrl }: RedirectCallbackParams) {
       // 認証後は常にホームページにリダイレクト
       if (url.startsWith("/login")) {
         return baseUrl;

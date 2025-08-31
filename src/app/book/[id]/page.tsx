@@ -1,4 +1,4 @@
-﻿import { getBook } from "@/lib/microcms/client";
+import { getBook } from "@/lib/microcms/client";
 import Image from "next/image";
 import React from "react";
 

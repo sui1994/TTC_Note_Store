@@ -1,10 +1,9 @@
 import Book from "./components/Book";
 import { getAllBooks } from "@/lib/microcms/client";
-import { BookType } from "./components/types/types";
+import { BookType, Purchase } from "./components/types/types";
 import { getServerSession } from "next-auth/next";
 import { nextAuthOptions } from "@/lib/next-auth/options";
 import { User } from "./components/types/types";
-
 import prisma from "@/lib/prisma";
 
 // Force dynamic rendering since this page uses session/headers

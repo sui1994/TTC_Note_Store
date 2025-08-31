@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 function getStripeClient() {
   const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeSecretKey) {
-    throw new Error("環境変数 STRIPE_SECRET_KEY が設定されていません");
+    throw new Error("STRIPE_SECRET_KEY environment variable is not set");
   }
 
   return new Stripe(stripeSecretKey, {
@@ -15,35 +15,30 @@ function getStripeClient() {
 }
 
 export async function POST(request: Request) {
-
   // 環境変数の確認とStripeクライアントの初期化
   let stripe: Stripe;
   try {
     stripe = getStripeClient();
-
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_error) {
-    return NextResponse.json({ error: "サーバー設定エラー: Stripe APIキーが見つかりません" }, { status: 500 });
+  } catch (error) {
+    console.error("Stripe initialization error:", error);
+    return NextResponse.json({ error: "Server configuration error: Missing Stripe API key" }, { status: 500 });
   }
 
   const { sessionId } = await request.json();
 
   try {
-
     if (!sessionId) {
-      throw new Error("セッションIDが見つかりません");
+      return NextResponse.json({ error: "Session ID is missing" }, { status: 400 });
     }
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-
-
     const bookId = session.metadata?.bookId;
 
     if (!bookId) {
-      throw new Error("セッションのメタデータに書籍IDが見つかりません");
+      return NextResponse.json({ error: "BookId not found in session metadata" }, { status: 400 });
     }
 
+    // 既存の購入記録をチェック
     const existingPurchase = await prisma.purchase.findFirst({
       where: {
         userId: session.client_reference_id!,
@@ -51,31 +46,37 @@ export async function POST(request: Request) {
       },
     });
 
-
-    if (!existingPurchase) {
-      const purchase = await prisma.purchase.create({
-        data: {
-          userId: session.client_reference_id!,
+    // 既に購入済みの場合
+    if (existingPurchase) {
+      return NextResponse.json(
+        {
+          message: "すでに購入済みです",
           bookId: bookId,
         },
-      });
-
-      const response = {
-        ...purchase,
-        bookId: bookId,
-      };
-      return NextResponse.json(response);
-    } else {
-      const response = {
-        message: "すでに購入済みにゃ",
-        bookId: bookId,
-      };
-      return NextResponse.json(response);
+        { status: 200 }
+      );
     }
-  } catch (err) {
+
+    // 新規購入記録を作成
+    const purchase = await prisma.purchase.create({
+      data: {
+        userId: session.client_reference_id!,
+        bookId: bookId,
+      },
+    });
+
     return NextResponse.json(
       {
-        error: "サーバー内部エラー",
+        ...purchase,
+        bookId: bookId,
+      },
+      { status: 201 }
+    );
+  } catch (err) {
+    console.error("Checkout success API error:", err);
+    return NextResponse.json(
+      {
+        error: "購入処理中にエラーが発生しました",
         details: err instanceof Error ? err.message : String(err),
       },
       { status: 500 }
@@ -83,3 +84,15 @@ export async function POST(request: Request) {
   }
 }
 
+// 他のHTTPメソッドに対するハンドラーを追加
+export async function GET() {
+  return NextResponse.json({ error: "Method not allowed. Use POST instead." }, { status: 405 });
+}
+
+export async function PUT() {
+  return NextResponse.json({ error: "Method not allowed. Use POST instead." }, { status: 405 });
+}
+
+export async function DELETE() {
+  return NextResponse.json({ error: "Method not allowed. Use POST instead." }, { status: 405 });
+}

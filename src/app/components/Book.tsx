@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import React, { memo, useState } from "react";
-import { BookType } from "./types/types";
+import { BookType, NextAuthUser } from "./types/types";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -17,10 +17,10 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
   const { data: session } = useSession();
 
   // セッションからユーザー情報を取得
-  const user = session?.user as { id: string; name?: string | null; email?: string | null; image?: string | null } | undefined;
+  const user = session?.user as NextAuthUser | undefined;
 
   //stripe checkout
-  const startCheckout = async (bookId: number) => {
+  const startCheckout = async (bookId: string) => {
     try {
       const requestBody = {
         bookId: book.id,
@@ -48,7 +48,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
 
         window.location.href = responseData.checkout_url;
       } else {
-        console.error("Invalid response data:", responseData);
+        console.error("レスポンスデータが不正です:", responseData);
         alert("チェックアウトURLの取得に失敗しました");
       }
     } catch (err) {
@@ -62,7 +62,6 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
       // 購入済みの場合はアラートを表示
       alert("その商品は購入済みですにゃ。");
     } else {
-      // 未購入の場合は購入確認モーダルを表示
       setShowModal(true);
     }
   };
@@ -92,13 +91,12 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
     // ログイン状態をチェック
     if (!user) {
       // ログアウト状態の場合は購入モーダルを表示
-
       setShowModal(true);
     } else if (isPurchased) {
       // ログイン済みかつ購入済みの場合は詳細ページに遷移
       router.push(`/book/${book.id}`);
     } else {
-      // ログイン済みだが未購入の場合は購入モーダルを表示
+      // ログイン済だが未購入の場合は購入モーダルを表示
       setShowModal(true);
     }
   };
