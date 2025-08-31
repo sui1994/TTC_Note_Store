@@ -13,8 +13,8 @@ export async function POST(request: Request) {
     }
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-
     const bookId = session.metadata?.bookId;
+
     if (!bookId) {
       return NextResponse.json({ error: "BookId not found in session metadata" }, { status: 400 });
     }
