@@ -1,4 +1,4 @@
-﻿import { nextAuthOptions } from "@/lib/next-auth/options";
+import { nextAuthOptions } from "@/lib/next-auth/options";
 import { getServerSession } from "next-auth/next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
