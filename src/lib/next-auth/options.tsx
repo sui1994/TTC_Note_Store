@@ -2,7 +2,6 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import GithubProvider from "next-auth/providers/github";
 import { prisma } from "@/lib/prisma";
 
-
 export const nextAuthOptions = {
   debug: process.env.NODE_ENV === "development",
   secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
@@ -43,12 +42,23 @@ export const nextAuthOptions = {
     },
   },
   events: {
-    async signOut() {
-      // セッション削除時のエラーハンドリング
+    async signOut({ session }: { session?: any }) {
       try {
+        // データベースセッション戦略を使用している場合、セッションは自動的に削除される
+        // 追加のクリーンアップが必要な場合はここに実装
+
+        if (process.env.NODE_ENV === "development") {
+          console.log("User signed out:", session?.user?.email || "Unknown user");
+        }
+
+        // Prisma接続のクリーンアップ
         await prisma.$disconnect();
+
+        // 必要に応じて追加のクリーンアップ処理
+        // 例: キャッシュのクリア、ログの記録など
       } catch (error) {
-        console.error("Error disconnecting Prisma:", error);
+        console.error("Error during sign out:", error);
+        // サインアウト処理でエラーが発生してもユーザーの操作は継続させる
       }
     },
   },

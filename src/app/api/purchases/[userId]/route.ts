@@ -20,7 +20,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
   try {
     const { userId } = await params;
 
-
     if (!userId) {
       return NextResponse.json(
         { error: "User ID is required" },
@@ -50,7 +49,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
         userId: userId,
       },
     });
-
 
     return NextResponse.json(purchases, {
       headers: corsHeaders,

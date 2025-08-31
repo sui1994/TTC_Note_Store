@@ -15,9 +15,7 @@ const PurchaseSuccess = () => {
     const fetchData = async () => {
       if (sessionId) {
         try {
-
           const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/checkout/success`;
-
 
           const res = await fetch(apiUrl, {
             method: "POST",
@@ -26,7 +24,6 @@ const PurchaseSuccess = () => {
             },
             body: JSON.stringify({ sessionId }),
           });
-
 
           if (!res.ok) {
             const errorText = await res.text();

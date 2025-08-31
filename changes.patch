@@ -1,0 +1,421 @@
+diff --git a/src/app/api/checkout/success/route.ts b/src/app/api/checkout/success/route.ts
+index 981ab4a..2cb8e15 100644
+--- a/src/app/api/checkout/success/route.ts
++++ b/src/app/api/checkout/success/route.ts
+@@ -8,23 +8,16 @@ export async function POST(request: Request, response: Response) {
+   const { sessionId } = await request.json();
+ 
+   try {
+-    // console.log("Retrieving Stripe session:", sessionId);
++    
+ 
+     if (!sessionId) {
+       throw new Error("Session ID is missing");
+     }
+ 
+     const session = await stripe.checkout.sessions.retrieve(sessionId);
+-    // // console.log("Stripe session retrieved successfully");
+-    // // console.log("Stripe session details:", {
+-    //   id: session.id,
+-    //   client_reference_id: session.client_reference_id,
+-    //   metadata: session.metadata,
+-    //   payment_status: session.payment_status,
+-    // });
+-
++    
+     const bookId = session.metadata?.bookId;
+-    // console.log("BookId from metadata:", bookId);
++    
+ 
+     if (!bookId) {
+       throw new Error("BookId not found in session metadata");
+@@ -37,31 +30,31 @@ export async function POST(request: Request, response: Response) {
+       },
+     });
+ 
+-    // console.log("Existing purchase check:", existingPurchase);
++    
+ 
+     if (!existingPurchase) {
+-      // console.log("Creating new purchase record");
++      
+       const purchase = await prisma.purchase.create({
+         data: {
+           userId: session.client_reference_id!,
+           bookId: bookId,
+         },
+       });
+-      // console.log("Purchase created:", purchase);
++      
+ 
+       const response = {
+         ...purchase,
+         bookId: bookId,
+       };
+-      // console.log("Returning response:", response);
++      
+       return NextResponse.json(response);
+     } else {
+-      // console.log("Purchase already exists");
++      
+       const response = {
+         message: "すでに購入済みにゃ",
+         bookId: bookId,
+       };
+-      // console.log("Returning response:", response);
++      
+       return NextResponse.json(response);
+     }
+   } catch (err) {
+diff --git a/src/app/book/checkout-success/page.tsx b/src/app/book/checkout-success/page.tsx
+index 7e36a23..4472c15 100644
+--- a/src/app/book/checkout-success/page.tsx
++++ b/src/app/book/checkout-success/page.tsx
+@@ -15,11 +15,10 @@ const PurchaseSuccess = () => {
+     const fetchData = async () => {
+       if (sessionId) {
+         try {
+-          // console.log("Fetching purchase data for session:", sessionId);
+-          // console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
++          
+ 
+           const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/checkout/success`;
+-          // console.log("Full API URL:", apiUrl);
++          
+ 
+           const res = await fetch(apiUrl, {
+             method: "POST",
+@@ -29,8 +28,7 @@ const PurchaseSuccess = () => {
+             body: JSON.stringify({ sessionId }),
+           });
+ 
+-          // console.log("Response status:", res.status);
+-          // console.log("Response ok:", res.ok);
++          
+ 
+           if (!res.ok) {
+             const errorText = await res.text();
+@@ -39,17 +37,17 @@ const PurchaseSuccess = () => {
+           }
+ 
+           const data = await res.json();
+-          // console.log("Purchase success response:", data);
+-          // console.log("BookId in response:", data.bookId);
+-          // console.log("BookId type:", typeof data.bookId);
++          
++          
++          
+ 
+           // APIからbookIdを取得
+           if (data.bookId) {
+-            // console.log("Setting bookId:", data.bookId);
++            
+             setBookId(data.bookId);
+           } else {
+-            // console.log("No bookId in response:", data);
+-            // console.log("Response keys:", Object.keys(data));
++            
++            
+             setError("購入情報の取得に失敗しました");
+           }
+         } catch (err) {
+@@ -113,4 +111,4 @@ const PurchaseSuccess = () => {
+   );
+ };
+ 
+-export default PurchaseSuccess;
++export default PurchaseSuccess;
+\ No newline at end of file
+diff --git a/src/app/components/Book.tsx b/src/app/components/Book.tsx
+index c6fe9ec..16766e6 100644
+--- a/src/app/components/Book.tsx
++++ b/src/app/components/Book.tsx
+@@ -23,8 +23,8 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
+ 
+   //stripe checkout
+   const startCheckout = async (bookId: string) => {
+-    // console.log("Starting checkout for book:", bookId);
+-    // console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
++    
++    
+ 
+     try {
+       const requestBody = {
+@@ -34,7 +34,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
+         userId: user?.id,
+       };
+ 
+-      // console.log("Request body:", requestBody);
++      
+ 
+       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
+         method: "POST",
+@@ -42,14 +42,14 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
+         body: JSON.stringify(requestBody),
+       });
+ 
+-      // console.log("Response status:", response.status);
++      
+ 
+       if (!response.ok) {
+         throw new Error(`HTTP error! status: ${response.status}`);
+       }
+ 
+       const responseData = await response.json();
+-      // console.log("Response data:", responseData);
++      
+ 
+       if (responseData && responseData.checkout_url) {
+         if (responseData.session_id) {
+@@ -57,7 +57,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
+         }
+ 
+         //チェックアウト後のURL遷移先
+-        // console.log("Redirecting to:", responseData.checkout_url);
++        
+         window.location.href = responseData.checkout_url;
+       } else {
+         console.error("Invalid response data:", responseData);
+@@ -80,17 +80,14 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
+   };
+ 
+   const handlePurchaseConfirm = () => {
+-    // console.log("Purchase confirm clicked");
+-    // console.log("User:", user);
+-    // console.log("Book:", book);
+ 
+     setShowModal(false); // モーダルを閉じる
+ 
+     if (!user) {
+-      // console.log("No user, redirecting to login");
++      
+       router.push("/login");
+     } else {
+-      // console.log("User exists, starting checkout");
++      
+       //Stripe購入画面へ。購入済みならそのまま本ページへ。
+       startCheckout(book.id);
+     }
+@@ -111,15 +108,15 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
+     // ログイン状態をチェック
+     if (!user) {
+       // ログアウト状態の場合は購入モーダルを表示
+-      // console.log("User not logged in, showing purchase modal");
++      
+       setShowModal(true);
+     } else if (isPurchased) {
+       // ログイン済みかつ購入済みの場合は詳細ページに遷移
+-      // console.log("User logged in and purchased, navigating to detail page");
++      
+       router.push(`/book/${book.id}`);
+     } else {
+-      // ログイン済��だが未購入の場合は購入モーダルを表示
+-      // console.log("User logged in but not purchased, showing purchase modal");
++      // ログイン済だが未購入の場合は購入モーダルを表示
++      
+       setShowModal(true);
+     }
+   };
+@@ -198,4 +195,4 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
+   );
+ });
+ 
+-export default Book;
++export default Book;
+\ No newline at end of file
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 6a8972b..ff7979f 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -4,59 +4,8 @@ import { BookType, Purchase } from "./components/types/types";
+ import { getServerSession } from "next-auth";
+ import { nextAuthOptions } from "@/lib/next-auth/options";
+ import { User } from "./components/types/types";
+-// import { getServerSession } from "next-auth";
+-// import { nextAuthOptions } from "./lib/next-auth/options";
+ 
+-//https://zenn.dev/arsaga/articles/3f5bce7c904ebe#%E3%83%90%E3%83%BC%E3%82%B8%E3%83%A7%E3%83%B3%E6%83%85%E5%A0%B1
+-// 疑似データ
+-// const books = [
+-//   {
+-//     id: 1,
+-//     title: "Book 1",
+-//     thumbnail: "/thumbnails/discord-clone-udemy.png",
+-//     author: {
+-//       id: 1,
+-//       name: "Author 1",
+-//       description: "Author 1 description",
+-//       profile_icon: "https://source.unsplash.com/random/2",
+-//     },
+-//     content: "Content 1",
+-//     created_at: new Date().toString(),
+-//     updated_at: new Date().toString(),
+-//   },
+-//   {
+-//     id: 2,
+-//     title: "Book 2",
+-//     thumbnail: "/thumbnails/notion-udemy.png",
+-//     author: {
+-//       id: 2,
+-//       name: "Author 2",
+-//       description: "Author 2 description",
+-//       profile_icon: "https://source.unsplash.com/random/3",
+-//     },
+-//     content: "Content 2",
+-//     created_at: new Date().toString(),
+-//     updated_at: new Date().toString(),
+-//   },
+-//   {
+-//     id: 3,
+-//     title: "Book 3",
+-//     thumbnail: "/thumbnails/openai-chatapplication-udem.png",
+-//     author: {
+-//       id: 3,
+-//       name: "Author 3",
+-//       description: "Author 3 description",
+-//       profile_icon: "https://source.unsplash.com/random/4",
+-//     },
+-//     content: "Content 3",
+-//     created_at: new Date().toString(),
+-//     updated_at: new Date().toString(),
+-//   },
+-//   // 他の本のデータ...
+-// ];
+ export default async function Home() {
+-  // const [books, setBooks] = useState<BookType[]>([]);
+-  // const [purchasedBookIds, setPurchasedBookIds] = useState<number[]>([]);
+ 
+   const session = await getServerSession(nextAuthOptions);
+   const user = session?.user as User;
+@@ -71,48 +20,24 @@ export default async function Home() {
+       if (response.ok) {
+         const purchasesData = await response.json();
+         purchasedIds = purchasesData.map((purchase: Purchase) => purchase.bookId);
+-      const purchasesData = await getPurchasesByUserId(user.id);
++      } else {
++        console.error("Failed to fetch purchases:", response.status, response.statusText);
++      }
+     } catch (error) {
+       console.error("Error fetching purchases:", error);
+     }
+   }
+-  // const { data: session } = useSession();
+-  // const user: any = session?.user;
+ 
+-  // useEffect(() => {
+-  //   const fetchBooksAndPurchases = async () => {
+-  //     try {
+-  //       // 書籍データの取得
+-  //       const booksData = await getAllBooks();
+-  //       setBooks(booksData.contents);
+-
+-  //       // ユーザーの購入履歴の取得
+-  //       if (user && user.id) {
+-  //         const response = await fetch(
+-  //           `${process.env.NEXT_PUBLIC_API_URL}/purchases/${user.id}`
+-  //         );
+-  //         const purchasesData = await response.json();
+-  //         const purchasedIds = purchasesData.map(
+-  //           (purchase: Purchase) => purchase.bookId
+-  //         );
+-  //         setPurchasedBookIds(purchasedIds);
+-  //       }
+-  //     } catch (error) {
+-  //       console.error("Error fetching data:", error);
+-  //     }
+-  //   };
+-
+-  //   fetchBooksAndPurchases();
+-  // }, [user]);
+ 
+   return (
+     <>
+       <main className="flex flex-wrap justify-center items-center md:mt-20 mt-20">
+         <h2 className="text-center w-full font-bold text-3xl mb-2">Book Commerce</h2>
+-        {contents.map((book: BookType) => (
++        {contents.map((book: BookType)=> (
+           <Book key={book.id} book={book} user={user} isPurchased={purchasedIds.includes(book.id)} />
+         ))}
+       </main>
+     </>
+   );
++
+ }
+diff --git a/src/lib/microcms/client.ts b/src/lib/microcms/client.ts
+index fe58228..1323b41 100644
+--- a/src/lib/microcms/client.ts
++++ b/src/lib/microcms/client.ts
+@@ -9,9 +9,6 @@ export const client = createClient({
+ // microCMS接続テスト関数
+ export const testConnection = async () => {
+   try {
+-    // console.log("Testing microCMS connection...");
+-    // console.log("Service Domain:", process.env.NEXT_PUBLIC_SERVICE_DOMAIN);
+-    // console.log("API Key (first 10 chars):", process.env.NEXT_PUBLIC_API_KEY?.substring(0, 10) + "...");
+ 
+     const response = await client.getList({
+       endpoint: "bookcommerce",
+@@ -30,30 +27,13 @@ export const testConnection = async () => {
+ 
+ export const getAllBooks = async () => {
+   try {
+-    // console.log("Fetching all books from microCMS...");
+-    // console.log("Service Domain:", process.env.NEXT_PUBLIC_SERVICE_DOMAIN);
+-    // console.log("API Key exists:", !!process.env.NEXT_PUBLIC_API_KEY);
++  
+ 
+     const allBooks = await client.getList<BookType>({
+       endpoint: "bookcommerce",
+     });
+ 
+-    // console.log("getAllBooks response:", allBooks);
+-    // console.log("Books contents:", allBooks.contents);
+-
+-    // // 各bookのIDをチェック
+-    // if (allBooks.contents) {
+-    //   allBooks.contents.forEach((book, index) => {
+-    //     console.log(`Book ${index}:`, {
+-    //       id: book.id,
+-    //       title: book.title,
+-    //       idType: typeof book.id,
+-    //       idIsUndefined: book.id === undefined,
+-    //       idIsNull: book.id === null,
+-    //       fullBook: book,
+-    //     });
+-    //   });
+-    // }
++   
+ 
+     return allBooks;
+   } catch (error) {
+@@ -63,7 +43,6 @@ export const getAllBooks = async () => {
+ 
+ export const getBook = async (contentId: string) => {
+   try {
+-    // console.log("Fetching book with ID:", contentId);
+ 
+     if (!contentId || contentId === "null" || contentId === "undefined") {
+       throw new Error("Invalid content ID");
+@@ -77,9 +56,6 @@ export const getBook = async (contentId: string) => {
+     console.log("getBook response:", detailBook);
+     return detailBook;
+   } catch (error) {
+-    // console.error("Error fetching book from MicroCMS:", error);
+-    // console.error("Content ID:", contentId);
+-    // console.error("Error details:", error);
+     throw error;
+   }
+ };
+diff --git a/src/lib/next-auth/options.tsx b/src/lib/next-auth/options.tsx
+index 1d3595a..4d1f5a6 100644
+--- a/src/lib/next-auth/options.tsx
++++ b/src/lib/next-auth/options.tsx
+@@ -27,8 +27,6 @@ export const nextAuthOptions: NextAuthOptions = {
+   },
+   events: {
+     async signOut({ session, token }) {
+-      // セッション削除時のエラーハンドリング
+-      // console.log("User signed out:", session?.user?.email || "Unknown user");
+     },
+   },
+ };
