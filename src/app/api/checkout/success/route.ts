@@ -32,17 +32,18 @@ export async function POST(request: Request) {
     }
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    const bookId = session.metadata?.bookId;
+    const productId = session.metadata?.productId || session.metadata?.bookId;
+    const variantId = session.metadata?.variantId || null;
 
-    if (!bookId) {
-      return NextResponse.json({ error: "BookId not found in session metadata" }, { status: 400 });
+    if (!productId) {
+      return NextResponse.json({ error: "productId not found in session metadata" }, { status: 400 });
     }
 
     // 既存の購入記録をチェック
     const existingPurchase = await prisma.purchase.findFirst({
       where: {
         userId: session.client_reference_id!,
-        bookId: bookId,
+        bookId: productId,
       },
     });
 
@@ -51,7 +52,9 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           message: "すでに購入済みです",
-          bookId: bookId,
+          bookId: productId,
+          productId,
+          variantId,
         },
         { status: 200 }
       );
@@ -61,14 +64,16 @@ export async function POST(request: Request) {
     const purchase = await prisma.purchase.create({
       data: {
         userId: session.client_reference_id!,
-        bookId: bookId,
+        bookId: productId,
       },
     });
 
     return NextResponse.json(
       {
         ...purchase,
-        bookId: bookId,
+        bookId: productId,
+        productId,
+        variantId,
       },
       { status: 201 }
     );

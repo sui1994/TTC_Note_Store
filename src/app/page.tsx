@@ -1,6 +1,6 @@
 import Book from "./components/Book";
 import { getAllBooks } from "@/lib/microcms/client";
-import { BookType, Purchase } from "./components/types/types";
+import { BookType } from "./components/types/types";
 import { getServerSession } from "next-auth/next";
 import { nextAuthOptions } from "@/lib/next-auth/options";
 import { User } from "./components/types/types";
@@ -33,12 +33,12 @@ export default async function Home() {
     return (
       <>
         <main className="flex flex-wrap justify-center items-center md:mt-20 mt-20">
-          <h2 className="text-center w-full font-bold text-3xl mb-2">Book Commerce</h2>
+          <h2 className="text-center w-full font-bold text-3xl mb-2">Notebook Store</h2>
           {contents.length > 0 ? (
             contents.map((book: BookType) => <Book key={book.id} book={book} isPurchased={purchasedIds.includes(book.id)} />)
           ) : (
             <div className="text-center w-full py-8">
-              <p className="text-gray-500">書籍を読み込み中...</p>
+              <p className="text-gray-500">商品を読み込み中...</p>
             </div>
           )}
         </main>
@@ -49,7 +49,7 @@ export default async function Home() {
     return (
       <>
         <main className="flex flex-wrap justify-center items-center md:mt-20 mt-20">
-          <h2 className="text-center w-full font-bold text-3xl mb-2">Book Commerce</h2>
+          <h2 className="text-center w-full font-bold text-3xl mb-2">Notebook Store</h2>
           <div className="text-center w-full py-8">
             <p className="text-red-500">エラーが発生しました。管理者に連絡してください。</p>
           </div>

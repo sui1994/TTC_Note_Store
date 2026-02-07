@@ -33,7 +33,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
     // Prisma接続テスト
     try {
       await prisma.$connect();
-    } catch (connectError) {
+    } catch {
       // Logging removed for production consistency
       return NextResponse.json(
         { error: "Database connection failed" },
