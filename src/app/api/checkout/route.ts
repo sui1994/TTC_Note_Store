@@ -23,19 +23,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Server configuration error: Missing Stripe API key" }, { status: 500 });
   }
 
-  const { title, price, bookId, userId } = await request.json();
+  const { title, price, productId, variantId, currency, userId } = await request.json();
 
   try {
+    if (!productId || !variantId || !userId) {
+      return NextResponse.json({ error: "productId, variantId and userId are required" }, { status: 400 });
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       metadata: {
-        bookId: bookId,
+        productId,
+        variantId,
+        // backward compatibility with existing purchase schema
+        bookId: productId,
       },
       client_reference_id: userId,
       line_items: [
         {
           price_data: {
-            currency: "jpy",
+            currency: currency || "jpy",
             product_data: {
               name: title,
             },

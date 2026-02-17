@@ -16,16 +16,30 @@ const DetailBook = async ({ params }: { params: Promise<{ id: string }> }) => {
     const book = await getBook(id);
 
     if (!book) {
-      return <div>書籍が見つかりません</div>;
+      return <div>商品が見つかりません</div>;
     }
 
     return (
       <div className="container mx-auto p-4">
         <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-          <Image className="w-full h-80 object-cover object-center" src={book.thumbnail.url} alt={book.title} width={700} height={700} />
+          <Image className="w-full h-80 object-cover object-center" src={book.image?.url || "/default_icon.png"} alt={book.name} width={700} height={700} />
           <div className="p-4">
-            <h2 className="text-2xl font-bold">{book.title}</h2>
-            <div className="text-gray-700 mt-2" dangerouslySetInnerHTML={{ __html: book.content }} />
+            <h2 className="text-2xl font-bold">{book.name}</h2>
+            <p className="text-gray-700 mt-2 whitespace-pre-wrap">{book.description || "商品説明は未設定です。"}</p>
+            <div className="mt-4">
+              <p className="font-semibold text-slate-800 mb-2">バリエーション</p>
+              <ul className="space-y-2">
+                {book.variants.length > 0 ? (
+                  book.variants.map((variant) => (
+                    <li key={variant.id} className="text-sm text-slate-700">
+                      {variant.label} / {variant.price}円 / 在庫: {variant.stock}
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-sm text-slate-500">バリエーション未登録</li>
+                )}
+              </ul>
+            </div>
 
             <div className="flex justify-between items-center mt-2">
               <span className="text-sm text-gray-500">公開日: {new Date(book.createdAt).toLocaleString()}</span>

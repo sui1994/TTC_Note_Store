@@ -1,25 +1,48 @@
-type BookType = {
+type ProductType = {
   id: string;
-  title: string;
-  price: number;
-  thumbnail: {
+  name: string;
+  description?: string;
+  shipping_category?: string;
+  sku: string;
+  is_active: boolean;
+  stripe_tax_code?: string;
+  currency?: string;
+  image?: {
     url: string;
   };
-  author: {
-    id: number;
-    name: string;
-    description: string;
-    profile_icon: string;
-  };
-  content: string;
   createdAt: string;
   updatedAt: string;
 };
 
+type VariantType = {
+  id: string;
+  product_id: string | { id: string };
+  variant_id: string;
+  label: string;
+  price: number;
+  stock: number;
+  weight?: number;
+  is_active: boolean;
+  sort_order?: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type ProductWithVariants = ProductType & {
+  variants: VariantType[];
+};
+
+// 既存コンポーネント互換用
+type BookType = ProductWithVariants;
+
 type Purchase = {
   id: string;
   userId: string;
-  bookId: string;
+  bookId?: string | null;
+  productId?: string | null;
+  variantId?: string | null;
+  stripeSessionId?: string | null;
+  status?: "PENDING" | "PAID" | "CANCELED";
   createdAt: string;
 };
 
@@ -62,4 +85,16 @@ type RedirectCallbackParams = {
   baseUrl: string;
 };
 
-export type { BookType, Purchase, User, NextAuthUser, NextAuthSession, AuthenticatedSession, SessionCallbackParams, RedirectCallbackParams };
+export type {
+  ProductType,
+  VariantType,
+  ProductWithVariants,
+  BookType,
+  Purchase,
+  User,
+  NextAuthUser,
+  NextAuthSession,
+  AuthenticatedSession,
+  SessionCallbackParams,
+  RedirectCallbackParams,
+};
