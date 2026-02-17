@@ -1,4 +1,5 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import type { Provider } from "next-auth/providers/index";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import LineProvider from "next-auth/providers/line";
@@ -7,8 +8,8 @@ import { SessionCallbackParams, RedirectCallbackParams } from "@/app/components/
 
 let hasWarnedAuthConfig = false;
 
-const buildProviders = () => {
-  const providers = [];
+const buildProviders = (): Provider[] => {
+  const providers: Provider[] = [];
   const missingProviders: string[] = [];
 
   if (process.env.GITHUB_ID && process.env.GITHUB_SECRET) {
