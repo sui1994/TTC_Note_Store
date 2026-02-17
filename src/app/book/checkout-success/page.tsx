@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 const PurchaseSuccess = () => {
-  const [bookId, setBookId] = useState<string | null>(null);
+  const [productId, setProductId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
@@ -32,9 +32,9 @@ const PurchaseSuccess = () => {
 
           const data = await res.json();
 
-          // APIからbookIdを取得
-          if (data.bookId) {
-            setBookId(data.bookId);
+          // APIから商品IDを取得
+          if (data.productId) {
+            setProductId(data.productId);
           } else {
             setError(`購入情報の取得に失敗しました。レスポンス: ${JSON.stringify(data)}`);
           }
@@ -84,8 +84,8 @@ const PurchaseSuccess = () => {
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-4">購入ありがとうございます！</h1>
         <p className="text-center text-gray-600">ご購入いただいた内容の詳細は、登録されたメールアドレスに送信されます。</p>
         <div className="mt-6 text-center">
-          {bookId ? (
-            <Link href={`/book/${bookId}`} className="text-indigo-600 hover:text-indigo-800 transition duration-300">
+          {productId ? (
+            <Link href={`/book/${productId}`} className="text-indigo-600 hover:text-indigo-800 transition duration-300">
               購入した記事を読む
             </Link>
           ) : (
