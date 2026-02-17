@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
+import { buildPurchaseBookId } from "@/lib/purchase-key";
 
 // Stripeクライアントを遅延初期化する関数
 function getStripeClient() {
@@ -46,13 +47,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "userId(client_reference_id) is missing in checkout session" }, { status: 400 });
     }
 
-    const purchaseKey = `${productId}::${variantId}`;
+    const purchaseKey = buildPurchaseBookId(productId, variantId);
 
     // 既存の購入記録をチェック
     const existingPurchase = await prisma.purchase.findFirst({
       where: {
-        userId,
-        bookId: purchaseKey,
+        OR: [
+          {
+            userId,
+            productId,
+            variantId,
+          },
+          {
+            userId,
+            bookId: purchaseKey,
+          },
+        ],
       },
     });
 
@@ -74,6 +84,10 @@ export async function POST(request: Request) {
       data: {
         userId,
         bookId: purchaseKey,
+        productId,
+        variantId,
+        stripeSessionId: session.id,
+        status: "PAID",
       },
     });
 

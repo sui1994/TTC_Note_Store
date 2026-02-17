@@ -38,7 +38,11 @@ type BookType = ProductWithVariants;
 type Purchase = {
   id: string;
   userId: string;
-  bookId: string;
+  bookId?: string | null;
+  productId?: string | null;
+  variantId?: string | null;
+  stripeSessionId?: string | null;
+  status?: "PENDING" | "PAID" | "CANCELED";
   createdAt: string;
 };
 

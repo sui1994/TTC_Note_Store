@@ -34,7 +34,7 @@ const PRODUCTS_ENDPOINT_CANDIDATES = [
   process.env.MICROCMS_PRODUCTS_ENDPOINT,
   "products",
   "notebooks",
-].filter(Boolean) as string[];
+].filter((endpoint): endpoint is string => endpoint !== undefined && endpoint !== null);
 
 const VARIANTS_ENDPOINT = process.env.MICROCMS_VARIANTS_ENDPOINT || "variants";
 const LIST_PAGE_LIMIT = Number(process.env.MICROCMS_LIST_LIMIT || 100);

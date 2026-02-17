@@ -2,18 +2,29 @@ import { nextAuthOptions } from "@/lib/next-auth/options";
 import { getServerSession } from "next-auth/next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { BookType, AuthenticatedSession } from "../components/types/types";
+import { BookType, AuthenticatedSession, VariantType } from "../components/types/types";
 import { getAllBooks } from "@/lib/microcms/client";
 import PurchaseDetailBook from "../components/PurchaseDetailBook";
 import { prisma } from "@/lib/prisma";
+import { resolvePurchaseParts } from "@/lib/purchase-key";
 
 export const dynamic = "force-dynamic";
 
-async function getPurchasedBooks(userId: string): Promise<BookType[]> {
+type PurchasedBookItem = {
+  purchaseId: string;
+  book: BookType;
+  variantLabel?: string;
+  variantPrice?: number;
+};
+
+async function getPurchasedBooks(userId: string): Promise<PurchasedBookItem[]> {
   try {
     const purchases = await prisma.purchase.findMany({
       where: {
         userId: userId,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
@@ -21,13 +32,33 @@ async function getPurchasedBooks(userId: string): Promise<BookType[]> {
       return [];
     }
 
-    const purchasedProductIds = Array.from(new Set(purchases.map((purchase) => purchase.bookId.split("::")[0])));
     const allBooks = await getAllBooks();
     const productMap = new Map(allBooks.contents.map((book) => [book.id, book]));
+    const dedupe = new Set<string>();
+    const purchasedItems: PurchasedBookItem[] = [];
 
-    return purchasedProductIds
-      .map((productId) => productMap.get(productId))
-      .filter((book): book is BookType => Boolean(book));
+    for (const purchase of purchases) {
+      const { productId, variantId } = resolvePurchaseParts(purchase);
+      if (!productId) continue;
+
+      const book = productMap.get(productId);
+      if (!book) continue;
+
+      const dedupeKey = `${purchase.userId}::${productId}::${variantId || ""}`;
+      if (dedupe.has(dedupeKey)) continue;
+      dedupe.add(dedupeKey);
+
+      const variant: VariantType | undefined = variantId ? book.variants.find((item) => item.id === variantId || item.variant_id === variantId) : undefined;
+
+      purchasedItems.push({
+        purchaseId: purchase.id,
+        book,
+        variantLabel: variant?.label,
+        variantPrice: variant?.price,
+      });
+    }
+
+    return purchasedItems;
   } catch (error) {
     console.error("getPurchasedBooksでエラーが発生しました:", error);
     return [];
@@ -45,7 +76,7 @@ export default async function ProfilePage() {
     const user = (session as AuthenticatedSession).user;
 
     // ユーザーIDが存在する場合のみ購入履歴を取得
-    let purchasedBooks: BookType[] = [];
+    let purchasedBooks: PurchasedBookItem[] = [];
     if (user.id) {
       purchasedBooks = await getPurchasedBooks(user.id);
     }
@@ -65,7 +96,14 @@ export default async function ProfilePage() {
 
         <div className="flex items-center gap-6 flex-wrap">
           {purchasedBooks.length > 0 ? (
-            purchasedBooks.map((book: BookType) => <PurchaseDetailBook key={book.id} purchaseDetailBook={book} />)
+            purchasedBooks.map((item) => (
+              <PurchaseDetailBook
+                key={item.purchaseId}
+                purchaseDetailBook={item.book}
+                purchasedVariantLabel={item.variantLabel}
+                purchasedVariantPrice={item.variantPrice}
+              />
+            ))
           ) : (
             <div className="text-gray-500 text-center w-full py-8">
               <p>まだ購入した書籍がありません</p>

@@ -8,10 +8,10 @@ import { useSession } from "next-auth/react";
 
 type BookProps = {
   book: BookType;
-  isPurchased: boolean;
+  purchasedVariantIds: string[];
 };
 
-const Book = memo(({ book, isPurchased }: BookProps) => {
+const Book = memo(({ book, purchasedVariantIds }: BookProps) => {
   const [showModal, setShowModal] = useState(false);
   const activeVariants = useMemo(
     () => (book.variants || []).filter((variant) => variant.is_active).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
@@ -20,12 +20,15 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
   const [selectedVariantId, setSelectedVariantId] = useState<string>(activeVariants[0]?.id || "");
   const router = useRouter();
   const { data: session } = useSession();
+  const purchasedVariantIdSet = useMemo(() => new Set(purchasedVariantIds), [purchasedVariantIds]);
 
   // セッションからユーザー情報を取得
   const user = session?.user as NextAuthUser | undefined;
 
   //stripe checkout
   const selectedVariant: VariantType | undefined = activeVariants.find((variant) => variant.id === selectedVariantId) || activeVariants[0];
+  const isSelectedVariantPurchased = selectedVariant ? purchasedVariantIdSet.has(selectedVariant.id) : false;
+  const hasPurchasedAnyVariant = purchasedVariantIds.length > 0;
 
   useEffect(() => {
     if (activeVariants.length === 0) {
@@ -86,9 +89,9 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
   };
 
   const handlePurchaseClick = () => {
-    if (isPurchased) {
+    if (isSelectedVariantPurchased) {
       // 購入済みの場合はアラートを表示
-      alert("その商品は購入済みですにゃ。");
+      alert("このバリエーションは購入済みです。");
     } else {
       setShowModal(true);
     }
@@ -120,7 +123,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
     if (!user) {
       // ログアウト状態の場合は購入モーダルを表示
       setShowModal(true);
-    } else if (isPurchased) {
+    } else if (hasPurchasedAnyVariant) {
       // ログイン済みかつ購入済みの場合は詳細ページに遷移
       router.push(`/book/${book.id}`);
     } else {
@@ -198,7 +201,7 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
               disabled={!selectedVariant || selectedVariant.stock <= 0}
               className="w-full bg-blue-500 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded"
             >
-              {isPurchased ? "購入済み" : "購入する"}
+              {isSelectedVariantPurchased ? "このバリエーションは購入済み" : "購入する"}
             </button>
           </div>
         </div>

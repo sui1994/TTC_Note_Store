@@ -49,12 +49,25 @@ model User {
   purchases     Purchase[]
 }
 
+enum PurchaseStatus {
+  PENDING
+  PAID
+  CANCELED
+}
+
 model Purchase {
-  id        String  @id @default(cuid())
-  userId    String
-  bookId String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String         @id @default(cuid())
+  userId          String
+  bookId          String?
+  productId       String?
+  variantId       String?
+  stripeSessionId String?        @unique
+  status          PurchaseStatus @default(PENDING)
+  createdAt       DateTime       @default(now())
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, productId])
+  @@index([userId, createdAt])
 }
 
 model VerificationToken {
