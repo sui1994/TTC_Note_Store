@@ -48,7 +48,8 @@ async function getPurchasedBooks(userId: string): Promise<PurchasedBookItem[]> {
       if (dedupe.has(dedupeKey)) continue;
       dedupe.add(dedupeKey);
 
-      const variant: VariantType | undefined = variantId ? book.variants.find((item) => item.id === variantId || item.variant_id === variantId) : undefined;
+      // checkoutではmicroCMSコンテンツID(item.id)を保存しているため、照合も同じ識別子に統一する。
+      const variant: VariantType | undefined = variantId ? book.variants.find((item) => item.id === variantId) : undefined;
 
       purchasedItems.push({
         purchaseId: purchase.id,

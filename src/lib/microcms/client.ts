@@ -38,6 +38,7 @@ const PRODUCTS_ENDPOINT_CANDIDATES = [
 
 const VARIANTS_ENDPOINT = process.env.MICROCMS_VARIANTS_ENDPOINT || "variants";
 const LIST_PAGE_LIMIT = Number(process.env.MICROCMS_LIST_LIMIT || 100);
+const CONTENT_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 
 const getProductRefId = (productRef: VariantType["product_id"]) => {
   if (typeof productRef === "string") return productRef;
@@ -186,6 +187,9 @@ export const getBook = async (contentId: string) => {
   try {
     if (!contentId || contentId === "null" || contentId === "undefined") {
       throw new Error("Invalid content ID");
+    }
+    if (!CONTENT_ID_PATTERN.test(contentId)) {
+      throw new Error("contentId format is invalid");
     }
 
     const product = await fetchProductById(contentId);

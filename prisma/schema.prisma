@@ -66,6 +66,7 @@ model Purchase {
   createdAt       DateTime       @default(now())
   user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, productId, variantId])
   @@index([userId, productId])
   @@index([userId, createdAt])
 }

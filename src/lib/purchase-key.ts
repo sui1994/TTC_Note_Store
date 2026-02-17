@@ -3,14 +3,16 @@ type PurchaseKeyParts = {
   variantId: string | null;
 };
 
-export const buildPurchaseBookId = (productId: string, variantId: string) => `${productId}::${variantId}`;
+// productIdとvariantIdを「::」で結合し、後方互換の購入キー文字列を生成する。
+export const buildPurchaseKey = (productId: string, variantId: string) => `${productId}::${variantId}`;
 
-export const parsePurchaseBookId = (bookId: string | null | undefined): PurchaseKeyParts => {
-  if (!bookId) {
+// 購入キー文字列を分解し、productIdとvariantIdを取り出す。
+export const parsePurchaseKey = (purchaseKey: string | null | undefined): PurchaseKeyParts => {
+  if (!purchaseKey) {
     return { productId: null, variantId: null };
   }
 
-  const [productId, variantId] = bookId.split("::");
+  const [productId, variantId] = purchaseKey.split("::");
   return {
     productId: productId || null,
     variantId: variantId || null,
@@ -22,6 +24,7 @@ export const resolvePurchaseParts = (purchase: {
   variantId?: string | null;
   bookId?: string | null;
 }): PurchaseKeyParts => {
+  // 新カラムがあればそれを優先し、なければ旧bookId形式を解析する。
   if (purchase.productId && purchase.variantId) {
     return {
       productId: purchase.productId,
@@ -29,5 +32,5 @@ export const resolvePurchaseParts = (purchase: {
     };
   }
 
-  return parsePurchaseBookId(purchase.bookId);
+  return parsePurchaseKey(purchase.bookId);
 };

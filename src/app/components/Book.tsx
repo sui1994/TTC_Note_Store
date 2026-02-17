@@ -32,17 +32,15 @@ const Book = memo(({ book, purchasedVariantIds }: BookProps) => {
 
   useEffect(() => {
     if (activeVariants.length === 0) {
-      if (selectedVariantId !== "") {
-        setSelectedVariantId("");
-      }
+      setSelectedVariantId("");
       return;
     }
 
-    const exists = activeVariants.some((variant) => variant.id === selectedVariantId);
-    if (!exists) {
-      setSelectedVariantId(activeVariants[0].id);
-    }
-  }, [activeVariants, selectedVariantId]);
+    setSelectedVariantId((current) => {
+      const exists = activeVariants.some((variant) => variant.id === current);
+      return exists ? current : activeVariants[0].id;
+    });
+  }, [activeVariants]);
 
   const startCheckout = async () => {
     try {
@@ -185,6 +183,7 @@ const Book = memo(({ book, purchasedVariantIds }: BookProps) => {
                     {activeVariants.map((variant) => (
                       <option key={variant.id} value={variant.id}>
                         {variant.label} ({variant.price}円 / 在庫:{variant.stock})
+                        {purchasedVariantIdSet.has(variant.id) ? " ✓購入済み" : ""}
                       </option>
                     ))}
                   </select>

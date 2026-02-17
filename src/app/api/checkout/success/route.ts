@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { buildPurchaseBookId } from "@/lib/purchase-key";
+import { buildPurchaseKey } from "@/lib/purchase-key";
 
 // Stripeクライアントを遅延初期化する関数
 function getStripeClient() {
@@ -47,49 +48,44 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "userId(client_reference_id) is missing in checkout session" }, { status: 400 });
     }
 
-    const purchaseKey = buildPurchaseBookId(productId, variantId);
-
-    // 既存の購入記録をチェック
-    const existingPurchase = await prisma.purchase.findFirst({
-      where: {
-        OR: [
-          {
-            userId,
-            productId,
-            variantId,
-          },
-          {
-            userId,
-            bookId: purchaseKey,
-          },
-        ],
-      },
-    });
-
-    // 既に購入済みの場合
-    if (existingPurchase) {
-      return NextResponse.json(
-        {
-          message: "すでに購入済みです",
+    const purchaseKey = buildPurchaseKey(productId, variantId);
+    let purchase;
+    try {
+      // stripeSessionIdのユニーク制約で二重保存を防ぐ。
+      purchase = await prisma.purchase.create({
+        data: {
+          userId,
           bookId: purchaseKey,
           productId,
           variantId,
+          stripeSessionId: session.id,
+          status: "PAID",
         },
-        { status: 200 }
-      );
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        const existingPurchase = await prisma.purchase.findFirst({
+          where: {
+            OR: [{ stripeSessionId: session.id }, { userId, productId, variantId }, { userId, bookId: purchaseKey }],
+          },
+        });
+        if (existingPurchase) {
+          return NextResponse.json(
+            {
+              message: "すでに購入済みです",
+              bookId: existingPurchase.bookId || purchaseKey,
+              productId: existingPurchase.productId || productId,
+              variantId: existingPurchase.variantId || variantId,
+            },
+            { status: 200 }
+          );
+        }
+      }
+      throw error;
     }
-
-    // 新規購入記録を作成
-    const purchase = await prisma.purchase.create({
-      data: {
-        userId,
-        bookId: purchaseKey,
-        productId,
-        variantId,
-        stripeSessionId: session.id,
-        status: "PAID",
-      },
-    });
 
     return NextResponse.json(
       {
