@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { BookType, AuthenticatedSession, VariantType } from "../components/types/types";
-import { getAllBooks } from "@/lib/microcms/client";
+import { getBooksByIds } from "@/lib/microcms/client";
 import PurchaseDetailBook from "../components/PurchaseDetailBook";
 import { prisma } from "@/lib/prisma";
 import { resolvePurchaseParts } from "@/lib/purchase-key";
@@ -32,8 +32,15 @@ async function getPurchasedBooks(userId: string): Promise<PurchasedBookItem[]> {
       return [];
     }
 
-    const allBooks = await getAllBooks();
-    const productMap = new Map(allBooks.contents.map((book) => [book.id, book]));
+    const requestedProductIds = Array.from(
+      new Set(
+        purchases
+          .map((purchase) => resolvePurchaseParts(purchase).productId)
+          .filter((productId): productId is string => Boolean(productId))
+      )
+    );
+    const books = await getBooksByIds(requestedProductIds);
+    const productMap = new Map(books.map((book) => [book.id, book]));
     const dedupe = new Set<string>();
     const purchasedItems: PurchasedBookItem[] = [];
 
