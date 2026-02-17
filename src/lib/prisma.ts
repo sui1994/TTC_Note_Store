@@ -5,6 +5,7 @@ import type { HTTPQueryOptions } from "@neondatabase/serverless";
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
+let prismaClient: PrismaClient | undefined;
 
 const neonHttpOptions: HTTPQueryOptions<false, false> = {
   arrayMode: false,
@@ -25,17 +26,22 @@ function createPrismaClient(): PrismaClient {
 }
 
 export function getPrismaClient(): PrismaClient {
+  if (prismaClient) {
+    return prismaClient;
+  }
+
   if (globalForPrisma.prisma) {
+    prismaClient = globalForPrisma.prisma;
     return globalForPrisma.prisma;
   }
 
-  const client = createPrismaClient();
+  prismaClient = createPrismaClient();
 
   if (process.env.NODE_ENV !== "production") {
-    globalForPrisma.prisma = client;
+    globalForPrisma.prisma = prismaClient;
   }
 
-  return client;
+  return prismaClient;
 }
 
 export const prisma = new Proxy({} as PrismaClient, {
