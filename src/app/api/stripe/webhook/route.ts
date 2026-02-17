@@ -9,7 +9,7 @@ export async function POST(request: Request) {
 
   if (!signature || !webhookSecret) {
     return NextResponse.json(
-      { error: "Missing stripe-signature header or STRIPE_WEBHOOK_SECRET" },
+      { error: "stripe-signature ヘッダーまたは STRIPE_WEBHOOK_SECRET が不足しています" },
       { status: 400 },
     );
   }
@@ -20,8 +20,8 @@ export async function POST(request: Request) {
     const stripe = getStripeClient();
     event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
   } catch (error) {
-    console.error("Stripe webhook signature verification failed:", error);
-    return NextResponse.json({ error: "Invalid webhook signature" }, { status: 400 });
+    console.error("Stripe webhook署名の検証に失敗しました:", error);
+    return NextResponse.json({ error: "Webhook署名が不正です" }, { status: 400 });
   }
 
   try {
@@ -30,8 +30,8 @@ export async function POST(request: Request) {
       await persistPaidPurchaseFromSession(session);
     }
   } catch (error) {
-    console.error("Stripe webhook handler failed:", error);
-    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
+    console.error("Stripe webhook処理に失敗しました:", error);
+    return NextResponse.json({ error: "Webhookの処理に失敗しました" }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });

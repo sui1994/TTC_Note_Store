@@ -16,15 +16,15 @@ export function extractPurchaseDataFromSession(session: Stripe.Checkout.Session)
   const userId = session.client_reference_id;
 
   if (!productId) {
-    throw new Error("productId not found in session metadata");
+    throw new Error("セッションメタデータに productId が見つかりません");
   }
 
   if (!variantId) {
-    throw new Error("variantId not found in session metadata");
+    throw new Error("セッションメタデータに variantId が見つかりません");
   }
 
   if (!userId) {
-    throw new Error("userId(client_reference_id) is missing in checkout session");
+    throw new Error("チェックアウトセッションに userId(client_reference_id) がありません");
   }
 
   return {
@@ -37,7 +37,7 @@ export function extractPurchaseDataFromSession(session: Stripe.Checkout.Session)
 
 export async function persistPaidPurchaseFromSession(session: Stripe.Checkout.Session) {
   if (session.payment_status !== "paid") {
-    throw new Error(`checkout session is not paid yet. payment_status=${session.payment_status ?? "unknown"}`);
+    throw new Error(`チェックアウトセッションの支払いが未完了です。payment_status=${session.payment_status ?? "unknown"}`);
   }
 
   const { userId, productId, variantId, purchaseKey } = extractPurchaseDataFromSession(session);
