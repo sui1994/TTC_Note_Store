@@ -1,17 +1,61 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import GithubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
+import LineProvider from "next-auth/providers/line";
 import { prisma } from "@/lib/prisma";
 import { SessionCallbackParams, RedirectCallbackParams } from "@/app/components/types/types";
+
+let hasWarnedAuthConfig = false;
+
+const buildProviders = () => {
+  const providers = [];
+  const missingProviders: string[] = [];
+
+  if (process.env.GITHUB_ID && process.env.GITHUB_SECRET) {
+    providers.push(
+      GithubProvider({
+        clientId: process.env.GITHUB_ID,
+        clientSecret: process.env.GITHUB_SECRET,
+      }),
+    );
+  } else {
+    missingProviders.push("GitHub(GITHUB_ID/GITHUB_SECRET)");
+  }
+
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    providers.push(
+      GoogleProvider({
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      }),
+    );
+  } else {
+    missingProviders.push("Google(GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET)");
+  }
+
+  if (process.env.LINE_CLIENT_ID && process.env.LINE_CLIENT_SECRET) {
+    providers.push(
+      LineProvider({
+        clientId: process.env.LINE_CLIENT_ID,
+        clientSecret: process.env.LINE_CLIENT_SECRET,
+      }),
+    );
+  } else {
+    missingProviders.push("LINE(LINE_CLIENT_ID/LINE_CLIENT_SECRET)");
+  }
+
+  if (!hasWarnedAuthConfig && missingProviders.length > 0) {
+    hasWarnedAuthConfig = true;
+    console.warn(`OAuth provider config is missing for: ${missingProviders.join(", ")}`);
+  }
+
+  return providers;
+};
 
 export const nextAuthOptions = {
   debug: process.env.NODE_ENV === "development",
   secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
-  providers: [
-    GithubProvider({
-      clientId: process.env.GITHUB_ID!,
-      clientSecret: process.env.GITHUB_SECRET!,
-    }),
-  ],
+  providers: buildProviders(),
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "database" as const,
