@@ -37,55 +37,98 @@ const PRODUCTS_ENDPOINT_CANDIDATES = [
 ].filter(Boolean) as string[];
 
 const VARIANTS_ENDPOINT = process.env.MICROCMS_VARIANTS_ENDPOINT || "variants";
+const LIST_PAGE_LIMIT = Number(process.env.MICROCMS_LIST_LIMIT || 100);
 
 const getProductRefId = (productRef: VariantType["product_id"]) => {
   if (typeof productRef === "string") return productRef;
   return productRef?.id;
 };
 
-const fetchProductsFromEndpoint = async (endpoint: string) => {
-  const client = createMicrocmsClient();
-  if (!client) return { contents: [] as ProductType[] };
-  return client.getList<ProductType>({
-    endpoint,
-    queries: {
-      filters: "is_active[equals]true",
-      limit: 100,
-    },
-    customRequestInit: {
-      cache: "no-store",
-    },
-  });
+type FetchListOptions = {
+  endpoint: string;
+  filters?: string;
+  orders?: string;
+  limit?: number;
 };
 
-const fetchVariants = async () => {
+const fetchAllContents = async <T>({ endpoint, filters, orders, limit = LIST_PAGE_LIMIT }: FetchListOptions): Promise<T[]> => {
   const client = createMicrocmsClient();
   if (!client) return [];
-  const variants = await client.getList<VariantType>({
-    endpoint: VARIANTS_ENDPOINT,
-    queries: {
-      filters: "is_active[equals]true",
-      orders: "sort_order",
-      limit: 1000,
-    },
-    customRequestInit: {
-      cache: "no-store",
-    },
-  });
 
-  return variants.contents;
+  const normalizedLimit = Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 100;
+  const contents: T[] = [];
+  let offset = 0;
+
+  while (true) {
+    const response = await client.getList<T>({
+      endpoint,
+      queries: {
+        filters,
+        orders,
+        limit: normalizedLimit,
+        offset,
+      },
+      customRequestInit: {
+        cache: "no-store",
+      },
+    });
+
+    contents.push(...response.contents);
+    offset += response.contents.length;
+
+    if (response.contents.length === 0 || offset >= response.totalCount) {
+      break;
+    }
+  }
+
+  return contents;
+};
+
+const fetchProductsFromEndpoint = async (endpoint: string) => {
+  return fetchAllContents<ProductType>({
+    endpoint,
+    filters: "is_active[equals]true",
+  });
 };
 
 const fetchProducts = async () => {
   for (const endpoint of PRODUCTS_ENDPOINT_CANDIDATES) {
     try {
-      const response = await fetchProductsFromEndpoint(endpoint);
-      return response.contents;
+      return await fetchProductsFromEndpoint(endpoint);
     } catch {
       continue;
     }
   }
   return [];
+};
+
+const fetchVariants = async (filters = "is_active[equals]true") => {
+  return fetchAllContents<VariantType>({
+    endpoint: VARIANTS_ENDPOINT,
+    filters,
+    orders: "sort_order",
+  });
+};
+
+const fetchProductById = async (contentId: string) => {
+  const client = createMicrocmsClient();
+  if (!client) return null;
+
+  for (const endpoint of PRODUCTS_ENDPOINT_CANDIDATES) {
+    try {
+      return await client.get<ProductType>({
+        endpoint,
+        contentId,
+        customRequestInit: {
+          cache: "no-store",
+        },
+      });
+    } catch {
+      continue;
+    }
+  }
+
+  return null;
 };
 
 // microCMS接続テスト関数
@@ -145,20 +188,16 @@ export const getBook = async (contentId: string) => {
       throw new Error("Invalid content ID");
     }
 
-    const allProducts = await fetchProducts();
-    const product = allProducts.find((item) => item.id === contentId);
+    const product = await fetchProductById(contentId);
     if (!product) {
       return null;
     }
 
-    const variants = await fetchVariants();
-    const productVariants = variants
-      .filter((variant) => getProductRefId(variant.product_id) === contentId)
-      .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    const productVariants = await fetchVariants(`is_active[equals]true[and]product_id[equals]${contentId}`);
 
     return {
       ...product,
-      variants: productVariants,
+      variants: productVariants.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
     } as ProductWithVariants;
   } catch (error) {
     console.error("getBook failed:", error);

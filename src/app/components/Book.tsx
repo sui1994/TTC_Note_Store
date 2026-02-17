@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { memo, useMemo, useState } from "react";
+import React, { memo, useEffect, useMemo, useState } from "react";
 import { BookType, NextAuthUser, VariantType } from "./types/types";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -26,6 +26,20 @@ const Book = memo(({ book, isPurchased }: BookProps) => {
 
   //stripe checkout
   const selectedVariant: VariantType | undefined = activeVariants.find((variant) => variant.id === selectedVariantId) || activeVariants[0];
+
+  useEffect(() => {
+    if (activeVariants.length === 0) {
+      if (selectedVariantId !== "") {
+        setSelectedVariantId("");
+      }
+      return;
+    }
+
+    const exists = activeVariants.some((variant) => variant.id === selectedVariantId);
+    if (!exists) {
+      setSelectedVariantId(activeVariants[0].id);
+    }
+  }, [activeVariants, selectedVariantId]);
 
   const startCheckout = async () => {
     try {

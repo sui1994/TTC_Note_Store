@@ -33,17 +33,26 @@ export async function POST(request: Request) {
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     const productId = session.metadata?.productId || session.metadata?.bookId;
-    const variantId = session.metadata?.variantId || null;
+    const variantId = session.metadata?.variantId;
+    const userId = session.client_reference_id;
 
     if (!productId) {
       return NextResponse.json({ error: "productId not found in session metadata" }, { status: 400 });
     }
+    if (!variantId) {
+      return NextResponse.json({ error: "variantId not found in session metadata" }, { status: 400 });
+    }
+    if (!userId) {
+      return NextResponse.json({ error: "userId(client_reference_id) is missing in checkout session" }, { status: 400 });
+    }
+
+    const purchaseKey = `${productId}::${variantId}`;
 
     // 既存の購入記録をチェック
     const existingPurchase = await prisma.purchase.findFirst({
       where: {
-        userId: session.client_reference_id!,
-        bookId: productId,
+        userId,
+        bookId: purchaseKey,
       },
     });
 
@@ -52,7 +61,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           message: "すでに購入済みです",
-          bookId: productId,
+          bookId: purchaseKey,
           productId,
           variantId,
         },
@@ -63,15 +72,15 @@ export async function POST(request: Request) {
     // 新規購入記録を作成
     const purchase = await prisma.purchase.create({
       data: {
-        userId: session.client_reference_id!,
-        bookId: productId,
+        userId,
+        bookId: purchaseKey,
       },
     });
 
     return NextResponse.json(
       {
         ...purchase,
-        bookId: productId,
+        bookId: purchaseKey,
         productId,
         variantId,
       },

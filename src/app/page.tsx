@@ -9,6 +9,8 @@ import prisma from "@/lib/prisma";
 // Force dynamic rendering since this page uses session/headers
 export const dynamic = "force-dynamic";
 
+const extractProductId = (purchaseBookId: string) => purchaseBookId.split("::")[0];
+
 export default async function Home() {
   try {
     const session = await getServerSession(nextAuthOptions);
@@ -24,7 +26,7 @@ export default async function Home() {
         const purchasesData = await prisma.purchase.findMany({
           where: { userId: user.id },
         });
-        purchasedIds = purchasesData.map((purchase) => purchase.bookId);
+        purchasedIds = purchasesData.map((purchase) => extractProductId(purchase.bookId));
       } catch (error) {
         console.error("購入情報の取得に失敗しました:", error);
       }

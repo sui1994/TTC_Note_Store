@@ -3,8 +3,7 @@ import { getServerSession } from "next-auth/next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { BookType, AuthenticatedSession } from "../components/types/types";
-import { Purchase } from "@prisma/client";
-import { getBook } from "@/lib/microcms/client";
+import { getAllBooks } from "@/lib/microcms/client";
 import PurchaseDetailBook from "../components/PurchaseDetailBook";
 import { prisma } from "@/lib/prisma";
 
@@ -12,7 +11,6 @@ export const dynamic = "force-dynamic";
 
 async function getPurchasedBooks(userId: string): Promise<BookType[]> {
   try {
-    // Server ComponentでPrismaを直接使用
     const purchases = await prisma.purchase.findMany({
       where: {
         userId: userId,
@@ -23,23 +21,13 @@ async function getPurchasedBooks(userId: string): Promise<BookType[]> {
       return [];
     }
 
-    // 各購入に対して書籍詳細を取得
-    const booksPromises = purchases.map(async (purchase: Purchase) => {
-      try {
-        const book = await getBook(purchase.bookId);
-        return book;
-      } catch (error) {
-        console.error(`書籍の取得に失敗しました ${purchase.bookId}:`, error);
-        return null;
-      }
-    });
+    const purchasedProductIds = Array.from(new Set(purchases.map((purchase) => purchase.bookId.split("::")[0])));
+    const allBooks = await getAllBooks();
+    const productMap = new Map(allBooks.contents.map((book) => [book.id, book]));
 
-    const books = await Promise.all(booksPromises);
-
-    // nullを除外して有効な書籍のみを返す
-    const validBooks = books.filter((book): book is BookType => book !== null);
-
-    return validBooks;
+    return purchasedProductIds
+      .map((productId) => productMap.get(productId))
+      .filter((book): book is BookType => Boolean(book));
   } catch (error) {
     console.error("getPurchasedBooksでエラーが発生しました:", error);
     return [];
