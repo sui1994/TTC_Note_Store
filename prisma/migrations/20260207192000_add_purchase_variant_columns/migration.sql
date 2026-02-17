@@ -13,7 +13,10 @@ SET
   END,
   "variantId" = CASE
     WHEN "bookId" IS NULL THEN NULL
-    WHEN POSITION('::' IN "bookId") > 0 THEN NULLIF(SPLIT_PART("bookId", '::', 2), '')
+    -- "::" を含み、かつその後ろに1文字以上ある場合のみ variantId を設定する
+    WHEN "bookId" LIKE '%::%_' THEN SPLIT_PART("bookId", '::', 2)
+    -- "::" を含むが後続文字がない場合（例: "productId::"）は variantId を NULL とする
+    WHEN POSITION('::' IN "bookId") > 0 THEN NULL
     ELSE NULL
   END;
 
