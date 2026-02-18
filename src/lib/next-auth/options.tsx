@@ -50,6 +50,12 @@ const buildProviders = (): Provider[] => {
     console.warn(`OAuth provider config is missing for: ${missingProviders.join(", ")}`);
   }
 
+  if (providers.length === 0) {
+    throw new Error(
+      `OAuth provider が1つも設定されていません。少なくとも1つの provider 環境変数を設定してください。未設定: ${missingProviders.join(", ")}`,
+    );
+  }
+
   return providers;
 };
 
