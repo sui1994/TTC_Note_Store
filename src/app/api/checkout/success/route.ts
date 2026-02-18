@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     if (session.payment_status !== "paid") {
       return NextResponse.json(
         {
-          status: "pending",
+          checkoutStatus: "pending",
           message: "支払い処理を確認中です",
           payment_status: session.payment_status,
         },
@@ -37,8 +37,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        status: "completed",
         ...purchase,
+        checkoutStatus: "completed",
         bookId: purchaseKey,
         productId,
         variantId,

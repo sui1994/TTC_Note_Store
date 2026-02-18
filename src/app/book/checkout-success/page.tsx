@@ -39,7 +39,7 @@ const PurchaseSuccess = () => {
 
             const data = await res.json();
 
-            if (data.status === "pending") {
+            if (data.checkoutStatus === "pending" || data.status === "pending") {
               if (cancelled) {
                 return;
               }
