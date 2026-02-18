@@ -12,6 +12,8 @@ const parseAdminEmails = () => {
 
 export async function GET() {
   try {
+    const timestamp = new Date().toISOString();
+    const isDevelopment = process.env.NODE_ENV === "development";
     const session = await getServerSession(nextAuthOptions);
     const signedInEmail = session?.user?.email?.toLowerCase();
     const adminEmails = parseAdminEmails();
@@ -73,9 +75,19 @@ export async function GET() {
 
     const status = missingConfig.length === 0 ? "ok" : "degraded";
 
+    if (!isDevelopment) {
+      if (missingConfig.length > 0) {
+        console.warn("[admin/health] missing config:", missingConfig);
+      }
+      return NextResponse.json({
+        status,
+        timestamp,
+      });
+    }
+
     return NextResponse.json({
       status,
-      timestamp: new Date().toISOString(),
+      timestamp,
       environment: process.env.NODE_ENV,
       envCheck,
       providerConfig,
