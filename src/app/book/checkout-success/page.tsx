@@ -7,42 +7,72 @@ import { useSearchParams } from "next/navigation";
 const PurchaseSuccess = () => {
   const [productId, setProductId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
 
   useEffect(() => {
+    let cancelled = false;
+    const RETRY_INTERVAL_MS = 2000;
+    const MAX_RETRIES = 5;
+
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
     const fetchData = async () => {
       if (sessionId) {
         try {
           const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/checkout/success`;
+          for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            const res = await fetch(apiUrl, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ sessionId }),
+            });
 
-          const res = await fetch(apiUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ sessionId }),
-          });
+            if (!res.ok) {
+              const errorText = await res.text();
+              throw new Error(`HTTPエラー! ステータス: ${res.status}, レスポンス: ${errorText}`);
+            }
 
-          if (!res.ok) {
-            const errorText = await res.text();
-            throw new Error(`HTTPエラー! ステータス: ${res.status}, レスポンス: ${errorText}`);
-          }
+            const data = await res.json();
 
-          const data = await res.json();
+            if (data.status === "pending") {
+              if (cancelled) {
+                return;
+              }
+              setPendingMessage("決済反映を確認しています。数秒おきに自動で再確認します。");
+              if (attempt < MAX_RETRIES) {
+                await wait(RETRY_INTERVAL_MS);
+                continue;
+              }
+              setPendingMessage("決済は処理中です。しばらくしてからページを再読み込みしてください。");
+              return;
+            }
 
-          // APIから商品IDを取得
-          if (data.productId) {
-            setProductId(data.productId);
-          } else {
+            if (data.productId) {
+              if (cancelled) {
+                return;
+              }
+              setProductId(data.productId);
+              setPendingMessage(null);
+              return;
+            }
+
             setError(`購入情報の取得に失敗しました。レスポンス: ${JSON.stringify(data)}`);
+            return;
           }
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (_err) {
-          setError("購入情報の取得中にエラーが発生しました");
+          if (!cancelled) {
+            setError("購入情報の取得中にエラーが発生しました");
+          }
         } finally {
-          setIsLoading(false);
+          if (!cancelled) {
+            setIsLoading(false);
+          }
         }
       } else {
         setError("セッションIDが見つかりません");
@@ -50,13 +80,33 @@ const PurchaseSuccess = () => {
       }
     };
     fetchData();
+    return () => {
+      cancelled = true;
+    };
   }, [sessionId]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center mt-20">
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <h1 className="text-2xl font-bold text-center text-gray-800 mb-4">処理中...</h1>
-          <p className="text-center text-gray-600">購入情報を確認しています。</p>
+          <p className="text-center text-gray-600">{pendingMessage ?? "購入情報を確認しています。"}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (pendingMessage) {
+    return (
+      <div className="flex items-center justify-center mt-20">
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h1 className="text-2xl font-bold text-center text-gray-800 mb-4">決済処理中</h1>
+          <p className="text-center text-gray-600">{pendingMessage}</p>
+          <div className="mt-6 text-center">
+            <Link href="/" className="text-indigo-600 hover:text-indigo-800 transition duration-300">
+              ホームに戻る
+            </Link>
+          </div>
         </div>
       </div>
     );

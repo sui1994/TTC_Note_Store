@@ -77,7 +77,7 @@ export async function GET() {
 
     if (!isDevelopment) {
       if (missingConfig.length > 0) {
-        console.warn("[admin/health] missing config:", missingConfig);
+        console.warn("[admin/health] 設定不足を検知:", missingConfig);
       }
       return NextResponse.json({
         status,
