@@ -9,6 +9,7 @@ const parseAdminEmails = () => {
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);
 };
+const adminEmails = parseAdminEmails();
 
 export async function GET() {
   try {
@@ -16,7 +17,6 @@ export async function GET() {
     const isDevelopment = process.env.NODE_ENV === "development";
     const session = await getServerSession(nextAuthOptions);
     const signedInEmail = session?.user?.email?.toLowerCase();
-    const adminEmails = parseAdminEmails();
 
     if (!session?.user || !signedInEmail) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
