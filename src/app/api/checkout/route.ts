@@ -59,8 +59,16 @@ export async function POST(request: Request) {
     } else {
       return NextResponse.json({ error: "price は数値または数字のみの文字列で指定してください" }, { status: 400 });
     }
-    const normalizedCurrency =
-      typeof currency === "string" && currency.trim().length > 0 ? currency.trim().toLowerCase() : "jpy";
+    const hasCurrencyField = Object.prototype.hasOwnProperty.call(body as Record<string, unknown>, "currency");
+    let normalizedCurrency: string;
+    if (hasCurrencyField) {
+      if (typeof currency !== "string" || currency.trim().length === 0) {
+        return NextResponse.json({ error: "currency は非空の文字列で指定してください" }, { status: 400 });
+      }
+      normalizedCurrency = currency.trim().toLowerCase();
+    } else {
+      normalizedCurrency = "jpy";
+    }
     const baseUrl = process.env.NEXTAUTH_URL?.trim();
     const normalizedBaseUrl = baseUrl?.replace(/\/+$/, "");
 
