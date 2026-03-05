@@ -1,21 +1,9 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
-
-// Stripeクライアントを遅延初期化する関数
-function getStripeClient() {
-  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-  if (!stripeSecretKey) {
-    throw new Error("STRIPE_SECRET_KEY environment variable is not set");
-  }
-
-  return new Stripe(stripeSecretKey, {
-    apiVersion: "2025-07-30.basil",
-  });
-}
+import { getStripeClient } from "@/lib/stripe";
 
 export async function POST(request: Request) {
   // 環境変数の確認とStripeクライアントの初期化
-  let stripe: Stripe;
+  let stripe: ReturnType<typeof getStripeClient>;
   try {
     stripe = getStripeClient();
   } catch (error) {
