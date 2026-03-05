@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripeClient } from "@/lib/stripe";
+import { prisma } from "@/lib/prisma";
 import { extractPurchaseDataFromSession, persistPaidPurchaseFromSession } from "@/lib/stripe-purchase";
 
 export async function POST(request: Request) {
@@ -34,6 +35,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "セッションIDが見つかりません" }, { status: 400 });
     }
 
+    const existingPurchase = await prisma.purchase.findUnique({
+      where: { stripeSessionId: normalizedSessionId },
+      select: {
+        bookId: true,
+        productId: true,
+        variantId: true,
+      },
+    });
+
+    if (existingPurchase) {
+      return NextResponse.json(
+        {
+          checkoutStatus: "completed",
+          bookId: existingPurchase.bookId ?? existingPurchase.productId,
+          productId: existingPurchase.productId ?? existingPurchase.bookId,
+          variantId: existingPurchase.variantId,
+          recovered: true,
+        },
+        { status: 200 },
+      );
+    }
+
     const session = await stripe.checkout.sessions.retrieve(normalizedSessionId);
     if (session.payment_status !== "paid") {
       return NextResponse.json(
@@ -60,6 +83,37 @@ export async function POST(request: Request) {
     );
   } catch (err) {
     console.error("Checkout success API error:", err);
+
+    // 保存済みデータが存在する場合は、画面側の完了表示を優先する。
+    const normalizedSessionId = typeof sessionId === "string" ? sessionId.trim() : "";
+    if (normalizedSessionId) {
+      try {
+        const existingPurchase = await prisma.purchase.findUnique({
+          where: { stripeSessionId: normalizedSessionId },
+          select: {
+            bookId: true,
+            productId: true,
+            variantId: true,
+          },
+        });
+
+        if (existingPurchase) {
+          return NextResponse.json(
+            {
+              checkoutStatus: "completed",
+              bookId: existingPurchase.bookId ?? existingPurchase.productId,
+              productId: existingPurchase.productId ?? existingPurchase.bookId,
+              variantId: existingPurchase.variantId,
+              recovered: true,
+            },
+            { status: 200 },
+          );
+        }
+      } catch (recoveryError) {
+        console.error("Checkout success recovery failed:", recoveryError);
+      }
+    }
+
     const isDevelopment = process.env.NODE_ENV === "development";
     return NextResponse.json(
       {

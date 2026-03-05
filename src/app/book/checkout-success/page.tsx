@@ -35,6 +35,14 @@ const PurchaseSuccess = () => {
 
             if (!res.ok) {
               const errorText = await res.text();
+              if (res.status >= 500 && attempt < MAX_ATTEMPTS - 1) {
+                if (cancelled) {
+                  return;
+                }
+                setPendingMessage("購入結果の反映を確認しています。数秒後に再試行します。");
+                await wait(RETRY_INTERVAL_MS);
+                continue;
+              }
               throw new Error(`HTTPエラー! ステータス: ${res.status}, レスポンス: ${errorText}`);
             }
 
