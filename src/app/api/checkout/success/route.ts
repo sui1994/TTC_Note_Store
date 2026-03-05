@@ -1,18 +1,7 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
-import { prisma } from "@/lib/prisma";
-
-// Stripeクライアントを遅延初期化する関数
-function getStripeClient() {
-  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-  if (!stripeSecretKey) {
-    throw new Error("STRIPE_SECRET_KEY environment variable is not set");
-  }
-
-  return new Stripe(stripeSecretKey, {
-    apiVersion: "2025-07-30.basil",
-  });
-}
+import type Stripe from "stripe";
+import { getStripeClient } from "@/lib/stripe";
+import { extractPurchaseDataFromSession, persistPaidPurchaseFromSession } from "@/lib/stripe-purchase";
 
 export async function POST(request: Request) {
   // 環境変数の確認とStripeクライアントの初期化
@@ -21,54 +10,37 @@ export async function POST(request: Request) {
     stripe = getStripeClient();
   } catch (error) {
     console.error("Stripe initialization error:", error);
-    return NextResponse.json({ error: "Server configuration error: Missing Stripe API key" }, { status: 500 });
+    return NextResponse.json({ error: "サーバー設定エラー: Stripe APIキーが未設定です" }, { status: 500 });
   }
 
   const { sessionId } = await request.json();
 
   try {
     if (!sessionId) {
-      return NextResponse.json({ error: "Session ID is missing" }, { status: 400 });
+      return NextResponse.json({ error: "セッションIDが見つかりません" }, { status: 400 });
     }
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    const bookId = session.metadata?.bookId;
-
-    if (!bookId) {
-      return NextResponse.json({ error: "BookId not found in session metadata" }, { status: 400 });
-    }
-
-    // 既存の購入記録をチェック
-    const existingPurchase = await prisma.purchase.findFirst({
-      where: {
-        userId: session.client_reference_id!,
-        bookId: bookId,
-      },
-    });
-
-    // 既に購入済みの場合
-    if (existingPurchase) {
+    if (session.payment_status !== "paid") {
       return NextResponse.json(
         {
-          message: "すでに購入済みです",
-          bookId: bookId,
+          checkoutStatus: "pending",
+          message: "支払い処理を確認中です",
+          payment_status: session.payment_status,
         },
-        { status: 200 }
+        { status: 202 },
       );
     }
 
-    // 新規購入記録を作成
-    const purchase = await prisma.purchase.create({
-      data: {
-        userId: session.client_reference_id!,
-        bookId: bookId,
-      },
-    });
+    await persistPaidPurchaseFromSession(session);
+    const { productId, variantId, purchaseKey } = extractPurchaseDataFromSession(session);
 
     return NextResponse.json(
       {
-        ...purchase,
-        bookId: bookId,
+        checkoutStatus: "completed",
+        bookId: purchaseKey,
+        productId,
+        variantId,
       },
       { status: 201 }
     );
@@ -86,13 +58,13 @@ export async function POST(request: Request) {
 
 // 他のHTTPメソッドに対するハンドラーを追加
 export async function GET() {
-  return NextResponse.json({ error: "Method not allowed. Use POST instead." }, { status: 405 });
+  return NextResponse.json({ error: "このメソッドは許可されていません。POSTを使用してください。" }, { status: 405 });
 }
 
 export async function PUT() {
-  return NextResponse.json({ error: "Method not allowed. Use POST instead." }, { status: 405 });
+  return NextResponse.json({ error: "このメソッドは許可されていません。POSTを使用してください。" }, { status: 405 });
 }
 
 export async function DELETE() {
-  return NextResponse.json({ error: "Method not allowed. Use POST instead." }, { status: 405 });
+  return NextResponse.json({ error: "このメソッドは許可されていません。POSTを使用してください。" }, { status: 405 });
 }

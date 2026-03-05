@@ -5,16 +5,20 @@ import { BookType } from "./types/types";
 
 type purchaseDetailBookProps = {
   purchaseDetailBook: BookType;
+  purchasedVariantLabel?: string;
+  purchasedVariantPrice?: number;
 };
 
-const PurchaseDetailBook = ({ purchaseDetailBook }: purchaseDetailBookProps) => {
+const PurchaseDetailBook = ({ purchaseDetailBook, purchasedVariantLabel, purchasedVariantPrice }: purchaseDetailBookProps) => {
+  const firstVariant = purchaseDetailBook.variants?.[0];
+  const priceText = typeof purchasedVariantPrice === "number" ? `${purchasedVariantPrice}円` : firstVariant ? `${firstVariant.price}円` : "未設定";
   return (
     <Link href={`/book/${purchaseDetailBook.id}`} className="cursor-pointer shadow-2xl duration-300 hover:translate-y-1 hover:shadow-none">
-      <Image priority src={purchaseDetailBook.thumbnail.url} alt={purchaseDetailBook.title} width={450} height={350} className="rounded-t-md" />
+      <Image priority src={purchaseDetailBook.image?.url || "/default_icon.png"} alt={purchaseDetailBook.name} width={450} height={350} className="rounded-t-md" />
       <div className="px-4 py-4 bg-slate-100 rounded-b-md">
-        <h2 className="text-lg font-semibold">{purchaseDetailBook.title}</h2>
-        {/* <p className="mt-2 text-lg text-slate-600">この本は○○...</p> */}
-        <p className="mt-2 text-md text-slate-700">値段：{purchaseDetailBook.price}円</p>
+        <h2 className="text-lg font-semibold">{purchaseDetailBook.name}</h2>
+        {purchasedVariantLabel ? <p className="mt-2 text-sm text-slate-600">購入バリエーション：{purchasedVariantLabel}</p> : null}
+        <p className="mt-2 text-md text-slate-700">価格：{priceText}</p>
       </div>
     </Link>
   );

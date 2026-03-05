@@ -17,6 +17,9 @@ const Header = () => {
           <Link href="/" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
             ホーム
           </Link>
+          <Link href="/notes" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+            ノート
+          </Link>
           {status === "loading" ? (
             <div className="text-gray-300 px-3 py-2">読み込み中...</div>
           ) : session ? (
