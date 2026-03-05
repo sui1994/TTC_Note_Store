@@ -24,6 +24,7 @@ const Book = memo(({ book, purchasedVariantIds }: BookProps) => {
 
   // セッションからユーザー情報を取得
   const user = session?.user as NextAuthUser | undefined;
+  const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL || "/api").replace(/\/+$/, "");
 
   //stripe checkout
   const selectedVariant: VariantType | undefined = activeVariants.find((variant) => variant.id === selectedVariantId) || activeVariants[0];
@@ -58,31 +59,50 @@ const Book = memo(({ book, purchasedVariantIds }: BookProps) => {
         userId: user?.id,
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
+      const response = await fetch(`${apiBaseUrl}/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      let responseData: unknown = null;
+      try {
+        responseData = await response.json();
+      } catch {
+        responseData = null;
       }
 
-      const responseData = await response.json();
+      if (!response.ok) {
+        const errorMessage =
+          responseData &&
+          typeof responseData === "object" &&
+          "error" in responseData &&
+          typeof (responseData as { error?: unknown }).error === "string"
+            ? (responseData as { error: string }).error
+            : `決済APIエラー（status: ${response.status}）`;
+        throw new Error(errorMessage);
+      }
 
-      if (responseData && responseData.checkout_url) {
-        if (responseData.session_id) {
-          sessionStorage.setItem("stripeSessionId", responseData.session_id);
+      if (
+        responseData &&
+        typeof responseData === "object" &&
+        "checkout_url" in responseData &&
+        typeof (responseData as { checkout_url?: unknown }).checkout_url === "string"
+      ) {
+        const successData = responseData as { checkout_url: string; session_id?: string };
+        if (successData.session_id) {
+          sessionStorage.setItem("stripeSessionId", successData.session_id);
         }
 
-        window.location.href = responseData.checkout_url;
+        window.location.href = successData.checkout_url;
       } else {
         console.error("レスポンスデータが不正です:", responseData);
         alert("チェックアウトURLの取得に失敗しました");
       }
     } catch (err) {
       console.error("Error in startCheckout:", err);
-      alert("エラーが発生しました。もう一度お試しください。");
+      const message = err instanceof Error ? err.message : "エラーが発生しました。もう一度お試しください。";
+      alert(message);
     }
   };
 
