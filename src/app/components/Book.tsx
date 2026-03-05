@@ -24,7 +24,7 @@ const Book = memo(({ book, purchasedVariantIds }: BookProps) => {
 
   // セッションからユーザー情報を取得
   const user = session?.user as NextAuthUser | undefined;
-  const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL || "/api").replace(/\/+$/, "");
+  const apiBaseUrl = "/api";
 
   //stripe checkout
   const selectedVariant: VariantType | undefined = activeVariants.find((variant) => variant.id === selectedVariantId) || activeVariants[0];

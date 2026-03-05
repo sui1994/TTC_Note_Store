@@ -14,6 +14,10 @@
     "db:generate": "dotenv -e .env.development.local -- prisma generate",
     "db:push": "dotenv -e .env.development.local -- prisma db push",
     "db:studio": "dotenv -e .env.development.local -- prisma studio",
+    "purchase:list": "dotenv -e .env.development.local -- node scripts/purchases-debug.js list",
+    "purchase:clear": "dotenv -e .env.development.local -- node scripts/purchases-debug.js delete-all --yes",
+    "purchase:clear:user": "dotenv -e .env.development.local -- node scripts/purchases-debug.js delete-user",
+    "purchase:clear:id": "dotenv -e .env.development.local -- node scripts/purchases-debug.js delete-id",
     "upload:notion": "node scripts/upload-to-notion.js",
     "diag:write": "node scripts/diagnose-write-issues.js"
   },

@@ -69,8 +69,8 @@ export async function POST(request: Request) {
     } else {
       normalizedCurrency = "jpy";
     }
-    const baseUrl = process.env.NEXTAUTH_URL?.trim();
-    const normalizedBaseUrl = baseUrl?.replace(/\/+$/, "");
+    const requestOrigin = new URL(request.url).origin;
+    const normalizedBaseUrl = requestOrigin.trim().replace(/\/+$/, "");
 
     if (requestUserId && requestUserId !== sessionUserId) {
       return NextResponse.json({ error: "リクエストの userId がセッションと一致しません" }, { status: 403 });
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
     }
 
     if (!normalizedBaseUrl) {
-      return NextResponse.json({ error: "サーバー設定エラー: NEXTAUTH_URL が未設定です" }, { status: 500 });
+      return NextResponse.json({ error: "サーバー設定エラー: ベースURLの解決に失敗しました" }, { status: 500 });
     }
 
     const checkoutSession = await stripe.checkout.sessions.create({

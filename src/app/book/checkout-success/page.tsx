@@ -11,7 +11,7 @@ const PurchaseSuccess = () => {
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
-  const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL || "/api").replace(/\/+$/, "");
+  const apiBaseUrl = "/api";
 
   useEffect(() => {
     let cancelled = false;
