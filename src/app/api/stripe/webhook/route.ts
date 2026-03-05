@@ -27,15 +27,32 @@ export async function POST(request: Request) {
   try {
     if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
       const session = event.data.object as Stripe.Checkout.Session;
-      if (session.payment_status === "paid") {
-        await persistPaidPurchaseFromSession(session);
-      } else {
+      const hasProductMetadata = !!(session.metadata?.productId || session.metadata?.bookId);
+      const hasVariantMetadata = !!session.metadata?.variantId;
+      const hasUserReference = !!session.client_reference_id;
+
+      if (session.payment_status !== "paid") {
         console.info("Stripe webhook: 支払い未確定のため購入確定処理をスキップしました", {
           eventType: event.type,
           sessionId: session.id,
           paymentStatus: session.payment_status,
         });
+        return NextResponse.json({ received: true });
       }
+
+      if (!hasProductMetadata || !hasVariantMetadata || !hasUserReference) {
+        console.warn("Stripe webhook: 購入確定に必要なメタデータ不足のため処理をスキップしました", {
+          eventType: event.type,
+          sessionId: session.id,
+          paymentStatus: session.payment_status,
+          hasProductMetadata,
+          hasVariantMetadata,
+          hasUserReference,
+        });
+        return NextResponse.json({ received: true });
+      }
+
+      await persistPaidPurchaseFromSession(session);
     }
   } catch (error) {
     console.error("Stripe webhook処理に失敗しました:", error);
