@@ -88,12 +88,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "price は 1 以上の数値を指定してください" }, { status: 400 });
     }
 
-    if (!Number.isInteger(normalizedPrice)) {
-      return NextResponse.json({ error: "price は最小通貨単位の整数で指定してください" }, { status: 400 });
+    if (!Number.isSafeInteger(normalizedPrice)) {
+      return NextResponse.json({ error: "price は安全な範囲の整数（最小通貨単位）で指定してください" }, { status: 400 });
     }
 
     if (!supportedCurrencies.has(normalizedCurrency)) {
-      return NextResponse.json({ error: "currency はサポート対象の値を指定してください（現在は jpy のみ）" }, { status: 400 });
+      const supportedCurrenciesLabel = Array.from(supportedCurrencies).join(" / ");
+      return NextResponse.json(
+        { error: `currency はサポート対象の値を指定してください（現在は ${supportedCurrenciesLabel} のみ）` },
+        { status: 400 },
+      );
     }
 
     if (!normalizedBaseUrl) {
