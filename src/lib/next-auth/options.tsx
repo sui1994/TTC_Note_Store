@@ -100,12 +100,7 @@ export const nextAuthOptions = {
   },
   events: {
     async signOut() {
-      // セッション削除時のエラーハンドリング
-      try {
-        await prisma.$disconnect();
-      } catch (error) {
-        console.error("Prismaの切断中にエラーが発生しました:", error);
-      }
+      // Prisma はシングルトン再利用方針のため、サインアウト時の明示切断は行わない。
     },
   },
 };
