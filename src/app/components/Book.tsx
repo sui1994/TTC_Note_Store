@@ -11,6 +11,17 @@ type BookProps = {
   purchasedVariantIds: string[];
 };
 
+const normalizeShippingCategory = (value: BookType["shipping_category"]): string => {
+  if (Array.isArray(value)) {
+    const first = value.find((item) => typeof item === "string" && item.trim().length > 0);
+    return typeof first === "string" ? first.trim() : "";
+  }
+  if (typeof value === "string") {
+    return value.trim();
+  }
+  return "";
+};
+
 const Book = memo(({ book, purchasedVariantIds }: BookProps) => {
   const [showModal, setShowModal] = useState(false);
   const activeVariants = useMemo(
@@ -18,6 +29,7 @@ const Book = memo(({ book, purchasedVariantIds }: BookProps) => {
     [book.variants]
   );
   const [selectedVariantId, setSelectedVariantId] = useState<string>(activeVariants[0]?.id || "");
+  const [selectedShippingMethod, setSelectedShippingMethod] = useState<"standard" | "express">("standard");
   const router = useRouter();
   const { data: session } = useSession();
   const purchasedVariantIdSet = useMemo(() => new Set(purchasedVariantIds), [purchasedVariantIds]);
@@ -30,6 +42,7 @@ const Book = memo(({ book, purchasedVariantIds }: BookProps) => {
   const selectedVariant: VariantType | undefined = activeVariants.find((variant) => variant.id === selectedVariantId) || activeVariants[0];
   const isSelectedVariantPurchased = selectedVariant ? purchasedVariantIdSet.has(selectedVariant.id) : false;
   const hasPurchasedAnyVariant = purchasedVariantIds.length > 0;
+  const normalizedShippingCategory = normalizeShippingCategory(book.shipping_category);
 
   useEffect(() => {
     if (activeVariants.length === 0) {
@@ -57,6 +70,8 @@ const Book = memo(({ book, purchasedVariantIds }: BookProps) => {
         price: selectedVariant.price,
         currency: book.currency || "jpy",
         userId: user?.id,
+        shippingMethod: selectedShippingMethod,
+        shippingCategory: normalizedShippingCategory,
       };
 
       const response = await fetch(`${apiBaseUrl}/checkout`, {
@@ -230,6 +245,17 @@ const Book = memo(({ book, purchasedVariantIds }: BookProps) => {
               <h3 className="text-xl mb-4 font-semibold">{book.name}</h3>
               <p className="text-gray-600 mb-2">バリエーション: {selectedVariant?.label || "未選択"}</p>
               <p className="text-gray-600 mb-4">価格: {selectedVariant?.price || 0}円</p>
+              <div className="mb-4">
+                <p className="text-gray-600 mb-2">発送方法</p>
+                <select
+                  value={selectedShippingMethod}
+                  onChange={(event) => setSelectedShippingMethod(event.target.value as "standard" | "express")}
+                  className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+                >
+                  <option value="standard">通常配送</option>
+                  <option value="express">お急ぎ配送</option>
+                </select>
+              </div>
               {!user ? (
                 <div>
                   <p className="mb-4">この商品を購入するにはログインが必要です。</p>

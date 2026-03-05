@@ -2,7 +2,7 @@ type ProductType = {
   id: string;
   name: string;
   description?: string;
-  shipping_category?: string;
+  shipping_category?: string | string[];
   sku: string;
   is_active: boolean;
   stripe_tax_code?: string;
