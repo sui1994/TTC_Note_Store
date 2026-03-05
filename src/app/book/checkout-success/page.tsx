@@ -15,7 +15,7 @@ const PurchaseSuccess = () => {
   useEffect(() => {
     let cancelled = false;
     const RETRY_INTERVAL_MS = 2000;
-    const MAX_RETRIES = 5;
+    const MAX_ATTEMPTS = 5;
 
     const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -23,7 +23,7 @@ const PurchaseSuccess = () => {
       if (sessionId) {
         try {
           const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/checkout/success`;
-          for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+          for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             const res = await fetch(apiUrl, {
               method: "POST",
               headers: {
@@ -44,7 +44,7 @@ const PurchaseSuccess = () => {
                 return;
               }
               setPendingMessage("決済反映を確認しています。数秒おきに自動で再確認します。");
-              if (attempt < MAX_RETRIES) {
+              if (attempt < MAX_ATTEMPTS - 1) {
                 await wait(RETRY_INTERVAL_MS);
                 continue;
               }

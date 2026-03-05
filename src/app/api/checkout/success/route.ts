@@ -32,12 +32,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const purchase = await persistPaidPurchaseFromSession(session);
+    await persistPaidPurchaseFromSession(session);
     const { productId, variantId, purchaseKey } = extractPurchaseDataFromSession(session);
 
     return NextResponse.json(
       {
-        ...purchase,
         checkoutStatus: "completed",
         bookId: purchaseKey,
         productId,
