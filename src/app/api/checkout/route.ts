@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "不正なリクエストボディです（JSONの解析に失敗しました）" }, { status: 400 });
   }
 
-  if (!body || typeof body !== "object") {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
     return NextResponse.json({ error: "不正なリクエストボディです（オブジェクト形式で送信してください）" }, { status: 400 });
   }
 
@@ -47,7 +47,18 @@ export async function POST(request: Request) {
     const normalizedProductId = typeof productId === "string" ? productId.trim() : "";
     const normalizedVariantId = typeof variantId === "string" ? variantId.trim() : "";
     const requestUserId = typeof userId === "string" ? userId.trim() : "";
-    const normalizedPrice = typeof price === "number" ? price : Number(price);
+    let normalizedPrice: number;
+    if (typeof price === "number") {
+      normalizedPrice = price;
+    } else if (typeof price === "string") {
+      const trimmedPrice = price.trim();
+      if (!/^[0-9]+$/.test(trimmedPrice)) {
+        return NextResponse.json({ error: "price は数値または数字のみの文字列で指定してください" }, { status: 400 });
+      }
+      normalizedPrice = Number(trimmedPrice);
+    } else {
+      return NextResponse.json({ error: "price は数値または数字のみの文字列で指定してください" }, { status: 400 });
+    }
     const normalizedCurrency =
       typeof currency === "string" && currency.trim().length > 0 ? currency.trim().toLowerCase() : "jpy";
     const baseUrl = process.env.NEXTAUTH_URL?.trim();
@@ -86,7 +97,8 @@ export async function POST(request: Request) {
       metadata: {
         productId: normalizedProductId,
         variantId: normalizedVariantId,
-        // Stripe metadata 上の後方互換キー。bookId は従来どおり productId を保持する。
+        // Stripe metadata 上では、metadata.productId が存在しない場合のフォールバックとして
+        // bookId にも同じ productId を保存しておく（古いセッション向けの後方互換用途）。
         bookId: normalizedProductId,
       },
       client_reference_id: sessionUserId,
