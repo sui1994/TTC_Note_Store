@@ -11,6 +11,7 @@ const PurchaseSuccess = () => {
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
+  const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL || "/api").replace(/\/+$/, "");
 
   useEffect(() => {
     let cancelled = false;
@@ -22,7 +23,7 @@ const PurchaseSuccess = () => {
     const fetchData = async () => {
       if (sessionId) {
         try {
-          const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/checkout/success`;
+          const apiUrl = `${apiBaseUrl}/checkout/success`;
           for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             const res = await fetch(apiUrl, {
               method: "POST",
@@ -64,10 +65,10 @@ const PurchaseSuccess = () => {
             setError(`購入情報の取得に失敗しました。レスポンス: ${JSON.stringify(data)}`);
             return;
           }
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (_err) {
+        } catch (err) {
           if (!cancelled) {
-            setError("購入情報の取得中にエラーが発生しました");
+            const message = err instanceof Error ? err.message : "購入情報の取得中にエラーが発生しました";
+            setError(message);
           }
         } finally {
           if (!cancelled) {
@@ -83,7 +84,7 @@ const PurchaseSuccess = () => {
     return () => {
       cancelled = true;
     };
-  }, [sessionId]);
+  }, [sessionId, apiBaseUrl]);
 
   if (isLoading) {
     return (
