@@ -137,7 +137,13 @@ export async function POST(request: Request) {
     });
   } catch (err: unknown) {
     console.error("Stripe checkout error:", err);
-    const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    const isDevelopment = process.env.NODE_ENV === "development";
+    return NextResponse.json(
+      {
+        error: "決済処理中にエラーが発生しました",
+        ...(isDevelopment ? { details: err instanceof Error ? err.message : String(err) } : {}),
+      },
+      { status: 500 },
+    );
   }
 }
