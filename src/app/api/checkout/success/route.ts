@@ -13,14 +13,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "サーバー設定エラー: Stripe APIキーが未設定です" }, { status: 500 });
   }
 
-  const { sessionId } = await request.json();
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch (error) {
+    console.error("checkout success: リクエストボディのJSONパースに失敗しました:", error);
+    return NextResponse.json({ error: "不正なリクエストボディです（JSONの解析に失敗しました）" }, { status: 400 });
+  }
+
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return NextResponse.json({ error: "不正なリクエストボディです（オブジェクト形式で送信してください）" }, { status: 400 });
+  }
+
+  const { sessionId } = body as { sessionId?: unknown };
 
   try {
-    if (!sessionId) {
+    const normalizedSessionId = typeof sessionId === "string" ? sessionId.trim() : "";
+
+    if (!normalizedSessionId) {
       return NextResponse.json({ error: "セッションIDが見つかりません" }, { status: 400 });
     }
 
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const session = await stripe.checkout.sessions.retrieve(normalizedSessionId);
     if (session.payment_status !== "paid") {
       return NextResponse.json(
         {
