@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { nextAuthOptions } from "@/lib/next-auth/options";
 import { getStripeClient } from "@/lib/stripe";
 
 export async function POST(request: Request) {
@@ -14,15 +16,28 @@ export async function POST(request: Request) {
   const { title, price, productId, variantId, currency, userId } = await request.json();
 
   try {
+    const authSession = await getServerSession(nextAuthOptions);
+    const sessionUserId = authSession?.user?.id;
+    if (!sessionUserId) {
+      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+    }
+
     const normalizedTitle = typeof title === "string" ? title.trim() : "";
     const normalizedProductId = typeof productId === "string" ? productId.trim() : "";
     const normalizedVariantId = typeof variantId === "string" ? variantId.trim() : "";
-    const normalizedUserId = typeof userId === "string" ? userId.trim() : "";
+    const requestUserId = typeof userId === "string" ? userId.trim() : "";
     const normalizedPrice = typeof price === "number" ? price : Number(price);
+    const normalizedCurrency =
+      typeof currency === "string" && currency.trim().length > 0 ? currency.trim().toLowerCase() : "jpy";
+    const supportedCurrencies = new Set(["jpy"]);
     const baseUrl = process.env.NEXTAUTH_URL;
 
-    if (!normalizedProductId || !normalizedVariantId || !normalizedUserId) {
-      return NextResponse.json({ error: "productId・variantId・userId は必須です" }, { status: 400 });
+    if (requestUserId && requestUserId !== sessionUserId) {
+      return NextResponse.json({ error: "リクエストの userId がセッションと一致しません" }, { status: 403 });
+    }
+
+    if (!normalizedProductId || !normalizedVariantId) {
+      return NextResponse.json({ error: "productId・variantId は必須です" }, { status: 400 });
     }
 
     if (!normalizedTitle) {
@@ -37,23 +52,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "price は最小通貨単位の整数で指定してください" }, { status: 400 });
     }
 
+    if (!supportedCurrencies.has(normalizedCurrency)) {
+      return NextResponse.json({ error: "currency はサポート対象の値を指定してください（現在は jpy のみ）" }, { status: 400 });
+    }
+
     if (!baseUrl) {
       return NextResponse.json({ error: "サーバー設定エラー: NEXTAUTH_URL が未設定です" }, { status: 500 });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       metadata: {
         productId: normalizedProductId,
         variantId: normalizedVariantId,
-        // backward compatibility with existing purchase schema
+        // Stripe metadata 上の後方互換キー。bookId は従来どおり productId を保持する。
         bookId: normalizedProductId,
       },
-      client_reference_id: normalizedUserId,
+      client_reference_id: sessionUserId,
       line_items: [
         {
           price_data: {
-            currency: currency || "jpy",
+            currency: normalizedCurrency,
             product_data: {
               name: normalizedTitle,
             },
@@ -67,8 +86,8 @@ export async function POST(request: Request) {
       cancel_url: `${baseUrl}`,
     });
     return NextResponse.json({
-      checkout_url: session.url,
-      session_id: session.id,
+      checkout_url: checkoutSession.url,
+      session_id: checkoutSession.id,
     });
   } catch (err: unknown) {
     console.error("Stripe checkout error:", err);
