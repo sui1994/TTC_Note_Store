@@ -54,20 +54,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
       );
     }
 
-    // Prisma接続テスト
-    try {
-      await prisma.$connect();
-    } catch {
-      // Logging removed for production consistency
-      return NextResponse.json(
-        { error: "データベース接続に失敗しました" },
-        {
-          status: 500,
-          headers: corsHeaders,
-        }
-      );
-    }
-
     const purchases = await prisma.purchase.findMany({
       where: {
         userId: userId,
@@ -87,7 +73,5 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
       },
       { status: 500, headers: corsHeaders },
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
