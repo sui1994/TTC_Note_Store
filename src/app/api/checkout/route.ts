@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     stripe = getStripeClient();
   } catch (error) {
     console.error("Stripe initialization error:", error);
-    return NextResponse.json({ error: "Server configuration error: Missing Stripe API key" }, { status: 500 });
+    return NextResponse.json({ error: "サーバー設定エラー: Stripe APIキーが未設定です" }, { status: 500 });
   }
 
   try {
@@ -106,6 +106,11 @@ export async function POST(request: Request) {
       success_url: `${normalizedBaseUrl}/book/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: normalizedBaseUrl,
     });
+
+    if (!checkoutSession.url) {
+      return NextResponse.json({ error: "決済ページURLの生成に失敗しました" }, { status: 500 });
+    }
+
     return NextResponse.json({
       checkout_url: checkoutSession.url,
       session_id: checkoutSession.id,
