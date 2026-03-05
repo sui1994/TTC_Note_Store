@@ -58,11 +58,27 @@ export async function persistPaidPurchaseFromSession(session: Stripe.Checkout.Se
       throw error;
     }
 
-    const existingPurchase = await prisma.purchase.findFirst({
-      where: {
-        OR: [{ stripeSessionId: session.id }, { userId, productId, variantId }, { userId, bookId: purchaseKey }],
-      },
-    });
+    // ユニークキーごとに優先順位をつけて対象レコードを決定する。
+    // 1) stripeSessionId の一致を最優先
+    // 2) (userId, productId, variantId) の複合ユニーク
+    // 3) 旧データ互換向けに (userId, bookId) をフォールバック検索
+    const existingPurchase =
+      (await prisma.purchase.findUnique({
+        where: { stripeSessionId: session.id },
+      })) ??
+      (await prisma.purchase.findUnique({
+        where: {
+          userId_productId_variantId: {
+            userId,
+            productId,
+            variantId,
+          },
+        },
+      })) ??
+      (await prisma.purchase.findFirst({
+        where: { userId, bookId: purchaseKey },
+        orderBy: { createdAt: "desc" },
+      }));
 
     if (!existingPurchase) {
       throw error;
