@@ -60,10 +60,11 @@ export async function POST(request: Request) {
     );
   } catch (err) {
     console.error("Checkout success API error:", err);
+    const isDevelopment = process.env.NODE_ENV === "development";
     return NextResponse.json(
       {
         error: "購入処理中にエラーが発生しました",
-        details: err instanceof Error ? err.message : String(err),
+        ...(isDevelopment ? { details: err instanceof Error ? err.message : String(err) } : {}),
       },
       { status: 500 }
     );

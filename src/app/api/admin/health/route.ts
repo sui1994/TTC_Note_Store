@@ -94,11 +94,13 @@ export async function GET() {
       missingConfig,
     });
   } catch (error) {
+    const isDevelopment = process.env.NODE_ENV === "development";
     return NextResponse.json(
       {
         status: "error",
         timestamp: new Date().toISOString(),
-        error: error instanceof Error ? error.message : "不明なエラー",
+        error: "管理者ヘルスチェック処理中にエラーが発生しました",
+        ...(isDevelopment ? { details: error instanceof Error ? error.message : String(error) } : {}),
       },
       { status: 500 },
     );
