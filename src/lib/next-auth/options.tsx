@@ -8,7 +8,7 @@ import { SessionCallbackParams, RedirectCallbackParams } from "@/app/components/
 
 let hasWarnedAuthConfig = false;
 
-const buildProviders = (): Provider[] => {
+const getProviderBuildResult = (): { providers: Provider[]; missingProviders: string[] } => {
   const providers: Provider[] = [];
   const missingProviders: string[] = [];
 
@@ -47,22 +47,28 @@ const buildProviders = (): Provider[] => {
 
   if (!hasWarnedAuthConfig && missingProviders.length > 0) {
     hasWarnedAuthConfig = true;
-    console.warn(`OAuth provider config is missing for: ${missingProviders.join(", ")}`);
+    console.warn(`OAuth provider の設定不足を検知: ${missingProviders.join(", ")}`);
   }
 
-  if (providers.length === 0) {
-    throw new Error(
-      `OAuth provider が1つも設定されていません。少なくとも1つの provider 環境変数を設定してください。未設定: ${missingProviders.join(", ")}`,
-    );
+  return { providers, missingProviders };
+};
+
+export const assertOAuthProvidersConfigured = () => {
+  const { providers, missingProviders } = getProviderBuildResult();
+
+  if (providers.length > 0) {
+    return;
   }
 
-  return providers;
+  throw new Error(
+    `OAuth provider が1つも設定されていません。少なくとも1つの provider 環境変数を設定してください。未設定: ${missingProviders.join(", ")}`,
+  );
 };
 
 export const nextAuthOptions = {
   debug: process.env.NODE_ENV === "development",
   secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
-  providers: buildProviders(),
+  providers: getProviderBuildResult().providers,
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "database" as const,

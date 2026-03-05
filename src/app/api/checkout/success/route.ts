@@ -10,14 +10,14 @@ export async function POST(request: Request) {
     stripe = getStripeClient();
   } catch (error) {
     console.error("Stripe initialization error:", error);
-    return NextResponse.json({ error: "Server configuration error: Missing Stripe API key" }, { status: 500 });
+    return NextResponse.json({ error: "サーバー設定エラー: Stripe APIキーが未設定です" }, { status: 500 });
   }
 
   const { sessionId } = await request.json();
 
   try {
     if (!sessionId) {
-      return NextResponse.json({ error: "Session ID is missing" }, { status: 400 });
+      return NextResponse.json({ error: "セッションIDが見つかりません" }, { status: 400 });
     }
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -59,13 +59,13 @@ export async function POST(request: Request) {
 
 // 他のHTTPメソッドに対するハンドラーを追加
 export async function GET() {
-  return NextResponse.json({ error: "Method not allowed. Use POST instead." }, { status: 405 });
+  return NextResponse.json({ error: "このメソッドは許可されていません。POSTを使用してください。" }, { status: 405 });
 }
 
 export async function PUT() {
-  return NextResponse.json({ error: "Method not allowed. Use POST instead." }, { status: 405 });
+  return NextResponse.json({ error: "このメソッドは許可されていません。POSTを使用してください。" }, { status: 405 });
 }
 
 export async function DELETE() {
-  return NextResponse.json({ error: "Method not allowed. Use POST instead." }, { status: 405 });
+  return NextResponse.json({ error: "このメソッドは許可されていません。POSTを使用してください。" }, { status: 405 });
 }

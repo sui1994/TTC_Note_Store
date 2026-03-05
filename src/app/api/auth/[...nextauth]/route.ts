@@ -1,6 +1,12 @@
 import NextAuth from "next-auth/next";
-import { nextAuthOptions } from "@/lib/next-auth/options";
+import { assertOAuthProvidersConfigured, nextAuthOptions } from "@/lib/next-auth/options";
 
-const handler = NextAuth(nextAuthOptions);
+type NextAuthHandler = ReturnType<typeof NextAuth>;
 
-export { handler as GET, handler as POST };
+const getNextAuthHandler = (): NextAuthHandler => {
+  assertOAuthProvidersConfigured();
+  return NextAuth(nextAuthOptions);
+};
+
+export const GET = (...args: Parameters<NextAuthHandler>) => getNextAuthHandler()(...args);
+export const POST = (...args: Parameters<NextAuthHandler>) => getNextAuthHandler()(...args);
