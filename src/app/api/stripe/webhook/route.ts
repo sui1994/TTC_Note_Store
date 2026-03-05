@@ -33,6 +33,7 @@ export async function POST(request: Request) {
 
       if (session.payment_status !== "paid") {
         console.info("Stripe webhook: 支払い未確定のため購入確定処理をスキップしました", {
+          eventId: event.id,
           eventType: event.type,
           sessionId: session.id,
           paymentStatus: session.payment_status,
@@ -40,14 +41,22 @@ export async function POST(request: Request) {
         return NextResponse.json({ received: true });
       }
 
+      const missingFields = [
+        !hasProductMetadata ? "metadata.productId|metadata.bookId" : null,
+        !hasVariantMetadata ? "metadata.variantId" : null,
+        !hasUserReference ? "client_reference_id" : null,
+      ].filter((field): field is string => field !== null);
+
       if (!hasProductMetadata || !hasVariantMetadata || !hasUserReference) {
         console.warn("Stripe webhook: 購入確定に必要なメタデータ不足のため処理をスキップしました", {
+          eventId: event.id,
           eventType: event.type,
           sessionId: session.id,
           paymentStatus: session.payment_status,
           hasProductMetadata,
           hasVariantMetadata,
           hasUserReference,
+          missingFields,
         });
         return NextResponse.json({ received: true });
       }
