@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { nextAuthOptions } from "@/lib/next-auth/options";
 import { prisma } from "@/lib/prisma";
 
 // CORS設定
@@ -19,10 +21,22 @@ export async function OPTIONS() {
 export async function GET(request: Request, { params }: { params: Promise<{ userId: string }> }) {
   try {
     const { userId } = await params;
+    const session = await getServerSession(nextAuthOptions);
+    const sessionUserId = session?.user?.id;
+
+    if (!sessionUserId) {
+      return NextResponse.json(
+        { error: "認証が必要です" },
+        {
+          status: 401,
+          headers: corsHeaders,
+        },
+      );
+    }
 
     if (!userId) {
       return NextResponse.json(
-        { error: "User ID is required" },
+        { error: "ユーザーIDが必要です" },
         {
           status: 400,
           headers: corsHeaders,
@@ -30,17 +44,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
       );
     }
 
-    // Prisma接続テスト
-    try {
-      await prisma.$connect();
-    } catch {
-      // Logging removed for production consistency
+    if (userId !== sessionUserId) {
       return NextResponse.json(
-        { error: "Database connection failed" },
+        { error: "このリソースへのアクセス権限がありません" },
         {
-          status: 500,
+          status: 403,
           headers: corsHeaders,
-        }
+        },
       );
     }
 
@@ -55,8 +65,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
     });
   } catch (err) {
     console.error("API: Error in GET /api/purchases/[userId]:", err);
-    return NextResponse.json({ error: "Internal server error", details: err instanceof Error ? err.message : "Unknown error" }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
+    const isDevelopment = process.env.NODE_ENV === "development";
+    return NextResponse.json(
+      {
+        error: "サーバー内部でエラーが発生しました",
+        ...(isDevelopment ? { details: err instanceof Error ? err.message : String(err) } : {}),
+      },
+      { status: 500, headers: corsHeaders },
+    );
   }
 }
