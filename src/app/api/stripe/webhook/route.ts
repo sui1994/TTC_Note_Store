@@ -27,7 +27,15 @@ export async function POST(request: Request) {
   try {
     if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
       const session = event.data.object as Stripe.Checkout.Session;
-      await persistPaidPurchaseFromSession(session);
+      if (session.payment_status === "paid") {
+        await persistPaidPurchaseFromSession(session);
+      } else {
+        console.info("Stripe webhook: 支払い未確定のため購入確定処理をスキップしました", {
+          eventType: event.type,
+          sessionId: session.id,
+          paymentStatus: session.payment_status,
+        });
+      }
     }
   } catch (error) {
     console.error("Stripe webhook処理に失敗しました:", error);
