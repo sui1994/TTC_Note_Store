@@ -33,6 +33,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "price は 1 以上の数値を指定してください" }, { status: 400 });
     }
 
+    if (!Number.isInteger(normalizedPrice)) {
+      return NextResponse.json({ error: "price は最小通貨単位の整数で指定してください" }, { status: 400 });
+    }
+
     if (!baseUrl) {
       return NextResponse.json({ error: "サーバー設定エラー: NEXTAUTH_URL が未設定です" }, { status: 500 });
     }
@@ -53,7 +57,7 @@ export async function POST(request: Request) {
             product_data: {
               name: normalizedTitle,
             },
-            unit_amount: Math.round(normalizedPrice),
+            unit_amount: normalizedPrice,
           },
           quantity: 1,
         },
